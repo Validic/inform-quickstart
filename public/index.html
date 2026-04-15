@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validic Inform Quickstart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-content">
+      <span class="wordmark">Validic Inform <span class="wordmark-sub">Quickstart</span></span>
+      <select id="user-select" class="user-select" disabled>
+        <option>● Loading users...</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- Connect -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Connect Your Device</h2>
+        <button class="btn-curl" id="curl-apps">copy curl</button>
+      </div>
+      <a id="marketplace-link" class="btn btn-primary" href="#" target="_blank" rel="noopener">
+        Connect a device or app →
+      </a>
+      <div id="apps-grid" class="apps-grid"></div>
+      <p id="apps-empty" class="empty-state" hidden>
+        No sources connected yet — connect one above and come back.
+      </p>
+    </section>
+
+    <!-- Your Data -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Your Data</h2>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-type="summaries">Summary</button>
+        <button class="tab" data-type="workouts">Workouts</button>
+        <button class="tab" data-type="sleep">Sleep</button>
+        <button class="tab" data-type="measurements">Measurements</button>
+        <button class="btn-curl tab-curl" id="curl-data">copy curl</button>
+      </div>
+      <div id="data-container"></div>
+    </section>
+
+    <!-- Live Stream -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Live Stream</h2>
+      </div>
+      <div class="stream-controls">
+        <button id="btn-connect"    class="btn btn-primary">Connect live stream</button>
+        <button id="btn-replay"     class="btn btn-outline">Replay last 30 days</button>
+        <button id="btn-disconnect" class="btn btn-ghost" hidden>Disconnect</button>
+        <button class="btn-curl" id="curl-connect">copy curl (connect)</button>
+        <button class="btn-curl" id="curl-replay">copy curl (replay)</button>
+        <span   id="event-counter"  class="event-counter">0 events</span>
+      </div>
+      <div id="event-feed" class="event-feed">
+        <span class="feed-empty">Connect the stream or replay to see events here.</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <a href="https://developer.validic.com" target="_blank" rel="noopener">Developer Docs</a>
+    <a href="https://developer.validic.com/agents.txt" target="_blank" rel="noopener">For Agents</a>
+    <a href="https://api.dashboard.validic.com" target="_blank" rel="noopener">Sign Up</a>
+    <a href="https://github.com/validic/inform-quickstart" target="_blank" rel="noopener">GitHub</a>
+    <span>Built with Validic Inform</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
