@@ -7,8 +7,8 @@ const https = require('https');
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 
-const BASE_URL = 'https://api.staging.validic.com';
-const STREAM_URL = 'https://streams.staging.validic.com';
+const BASE_URL = 'https://api.v2.validic.com';
+const STREAM_URL = 'https://streams.v2.validic.com';
 
 // Validic API endpoints used by this app:
 //   POST   BASE_URL/organizations/:org_id/users          — provision user
