@@ -7,7 +7,7 @@ Clone it, run it, then use it as the starting point for whatever you want to bui
 
 ## Prerequisites
 
-- Node.js 18 or higher
+- Node.js 22 or higher
 - A Validic Inform account — [free sandbox at api.dashboard.validic.com](https://api.dashboard.validic.com)
 
 ## Setup
