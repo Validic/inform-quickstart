@@ -41,7 +41,7 @@ Both are available in your [Validic dashboard](https://api.dashboard.validic.com
 npm start
 ```
 
-On first run, the app provisions you as a Validic user and creates a data stream automatically. Your `.env` is updated with the resulting IDs. Open [http://localhost:3000](http://localhost:3000).
+On startup, the app finds or creates a Validic user and stream for your org automatically. Open [http://localhost:3000](http://localhost:3000).
 
 ## What you're looking at
 
