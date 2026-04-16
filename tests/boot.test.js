@@ -20,7 +20,7 @@ describe('ensureUser', () => {
   });
 
   test('uses existing user if one is found', async () => {
-    nock('https://api.staging.validic.com')
+    nock('https://api.v2.validic.com')
       .get('/organizations/test-org/users?token=test-token')
       .reply(200, {
         users: [{ id: 'user-abc', uid: 'sample-user', marketplace: { token: 'token-xyz', url: 'https://marketplace.validic.com?token=token-xyz' } }],
@@ -33,11 +33,11 @@ describe('ensureUser', () => {
   });
 
   test('provisions new user if org has no users', async () => {
-    nock('https://api.staging.validic.com')
+    nock('https://api.v2.validic.com')
       .get('/organizations/test-org/users?token=test-token')
       .reply(200, { users: [] });
 
-    nock('https://api.staging.validic.com')
+    nock('https://api.v2.validic.com')
       .post('/organizations/test-org/users?token=test-token')
       .reply(201, {
         id: 'user-new',
@@ -54,7 +54,7 @@ describe('ensureUser', () => {
   test('always calls API even if VALIDIC_USER_ID set in env', async () => {
     process.env.VALIDIC_USER_ID = 'stale-env-user';
 
-    nock('https://api.staging.validic.com')
+    nock('https://api.v2.validic.com')
       .get('/organizations/test-org/users?token=test-token')
       .reply(200, {
         users: [{ id: 'api-user', uid: 'real-user', marketplace: { token: 'tok', url: 'https://marketplace.validic.com?token=tok' } }],
@@ -65,7 +65,7 @@ describe('ensureUser', () => {
   });
 
   test('throws on Validic API error', async () => {
-    nock('https://api.staging.validic.com')
+    nock('https://api.v2.validic.com')
       .get('/organizations/test-org/users?token=test-token')
       .reply(401, 'Unauthorized');
     await expect(ensureUser()).rejects.toThrow('Failed to list users: 401');
@@ -80,7 +80,7 @@ describe('ensureStream', () => {
   });
 
   test('uses existing stream if found', async () => {
-    nock('https://streams.staging.validic.com')
+    nock('https://streams.v2.validic.com')
       .get('/streams?token=test-token')
       .reply(200, { streams: [{ id: 'stream-existing', name: 'sample-app-stream' }] });
 
@@ -90,11 +90,11 @@ describe('ensureStream', () => {
   });
 
   test('creates stream if none found', async () => {
-    nock('https://streams.staging.validic.com')
+    nock('https://streams.v2.validic.com')
       .get('/streams?token=test-token')
       .reply(200, { streams: [] });
 
-    nock('https://streams.staging.validic.com')
+    nock('https://streams.v2.validic.com')
       .post('/streams?token=test-token')
       .reply(201, { id: 'stream-123', name: 'sample-app-stream' });
 
@@ -104,7 +104,7 @@ describe('ensureStream', () => {
   });
 
   test('throws on Validic API error', async () => {
-    nock('https://streams.staging.validic.com')
+    nock('https://streams.v2.validic.com')
       .get('/streams?token=test-token')
       .reply(500, 'internal error');
     await expect(ensureStream()).rejects.toThrow('Failed to list streams: 500');
