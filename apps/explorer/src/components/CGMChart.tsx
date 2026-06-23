@@ -89,7 +89,7 @@ export default function CGMChart({ readings, unit }: CGMChartProps) {
     return `M 0,${chartHeight} L ${points.join(' L ')} L 100,${chartHeight} Z`;
   }, [sortedReadings, chartHeight, minValue, valueRange]);
 
-  // Early return for empty readings — after all hooks
+  // Early returns — after all hooks
   if (!readings || readings.length === 0) {
     return (
       <div className="bg-gray-900/50 rounded-xl p-4 text-center text-gray-500">
@@ -97,6 +97,7 @@ export default function CGMChart({ readings, unit }: CGMChartProps) {
       </div>
     );
   }
+  if (!stats) return null;
 
   const handleCopyJson = async (e: React.MouseEvent) => {
     e.stopPropagation();
