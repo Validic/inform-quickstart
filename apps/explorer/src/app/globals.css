@@ -1,0 +1,731 @@
+@import "tailwindcss";
+
+/* ========================================
+   STANDARD THEME (Default)
+   ======================================== */
+
+/* Dark theme (default) */
+:root,
+[data-theme="dark"] {
+  --validic-primary: #0066CC;
+  --validic-secondary: #004499;
+  --validic-accent: #00AAFF;
+  --validic-dark: #1a1a2e;
+  --validic-darker: #0f0f1a;
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #1a1a2e;
+  --bg-card: rgba(26, 26, 46, 0.8);
+  --bg-input: rgba(15, 15, 26, 0.8);
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --border-color: rgba(0, 102, 204, 0.3);
+  --border-hover: rgba(0, 170, 255, 0.5);
+  --scrollbar-track: #0f0f1a;
+  --scrollbar-thumb: #0066CC;
+  /* Service category colors */
+  --color-users: #0066CC;
+  --color-data: #00AAFF;
+  --color-sparks: #a855f7;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #eab308;
+}
+
+/* Light theme - soft light blue */
+[data-theme="light"] {
+  --validic-primary: #0066CC;
+  --validic-secondary: #004499;
+  --validic-accent: #0088dd;
+  --validic-dark: #e8f4fc;
+  --validic-darker: #dbeafe;
+  --bg-primary: #dbeafe;
+  --bg-secondary: #e8f4fc;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-input: rgba(255, 255, 255, 0.9);
+  --text-primary: #1e3a5f;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: rgba(0, 102, 204, 0.25);
+  --border-hover: rgba(0, 102, 204, 0.5);
+  --scrollbar-track: #dbeafe;
+  --scrollbar-thumb: #0066CC;
+}
+
+/* ========================================
+   VALIDIC BRAND THEME
+   Based on Validic Brand Platform 2024
+   Primary: Dark Blue #1F2957, Sky Blue #12C1E6
+   ======================================== */
+
+/* Validic Dark Theme */
+[data-brand="validic"][data-theme="dark"] {
+  /* Primary brand colors */
+  --validic-primary: #1F2957;      /* Dark Blue - main identifier */
+  --validic-secondary: #1D75BC;    /* Ocean Blue */
+  --validic-accent: #12C1E6;       /* Sky Blue - main identifier */
+
+  /* Background colors - using Dark Blue (#1F2957) as base for rich branded look */
+  --validic-dark: #1F2957;         /* Dark Blue - THE Validic color */
+  --validic-darker: #161d42;       /* Deeper Dark Blue */
+  --bg-primary: #141a3a;           /* Deep navy base */
+  --bg-secondary: #1a2248;         /* Slightly lighter navy */
+  --bg-card: rgba(31, 41, 87, 0.85); /* Dark Blue with transparency */
+  --bg-input: rgba(20, 26, 58, 0.9); /* Deep navy input */
+
+  /* Text colors */
+  --text-primary: #ffffff;
+  --text-secondary: #83D1F2;       /* Light Sky Blue for better contrast on navy */
+  --text-muted: #8E9BD4;           /* Periwinkle */
+
+  /* Borders with Sky Blue tint */
+  --border-color: rgba(18, 193, 230, 0.3);
+  --border-hover: rgba(18, 193, 230, 0.5);
+
+  /* Scrollbar */
+  --scrollbar-track: #141a3a;
+  --scrollbar-thumb: #12C1E6;      /* Sky Blue thumb */
+
+  /* Service category colors - Validic secondary palette */
+  --color-users: #1D75BC;          /* Ocean Blue */
+  --color-data: #12C1E6;           /* Sky Blue */
+  --color-sparks: #8E9BD4;         /* Periwinkle */
+  --color-success: #56D88D;        /* Emerald Green */
+  --color-error: #F17D58;          /* Burnt Sienna */
+  --color-warning: #F6E274;        /* Marigold Yellow */
+}
+
+/* Validic Light Theme */
+[data-brand="validic"][data-theme="light"] {
+  /* Primary brand colors */
+  --validic-primary: #1F2957;      /* Dark Blue */
+  --validic-secondary: #1D75BC;    /* Ocean Blue */
+  --validic-accent: #12C1E6;       /* Sky Blue */
+
+  /* Background colors - Light Sky Blue base */
+  --validic-dark: #e0f4fa;
+  --validic-darker: #83D1F2;       /* Light Sky Blue from brand */
+  --bg-primary: #e8f7fc;
+  --bg-secondary: #f0fafd;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --bg-input: rgba(255, 255, 255, 0.95);
+
+  /* Text colors - Dark Blue based */
+  --text-primary: #1F2957;         /* Dark Blue for primary text */
+  --text-secondary: #1D75BC;       /* Ocean Blue for secondary */
+  --text-muted: #8E9BD4;           /* Periwinkle for muted */
+
+  /* Borders */
+  --border-color: rgba(31, 41, 87, 0.2);
+  --border-hover: rgba(18, 193, 230, 0.5);
+
+  /* Scrollbar */
+  --scrollbar-track: #e8f7fc;
+  --scrollbar-thumb: #1F2957;
+
+  /* Service category colors - Validic secondary palette */
+  --color-users: #1D75BC;          /* Ocean Blue */
+  --color-data: #12C1E6;           /* Sky Blue */
+  --color-sparks: #8E9BD4;         /* Periwinkle */
+  --color-success: #2BC9A3;        /* Shamrock Green */
+  --color-error: #F17D58;          /* Burnt Sienna */
+  --color-warning: #F6E274;        /* Marigold Yellow */
+}
+
+body {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  min-height: 100vh;
+  color: var(--text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--validic-accent);
+}
+
+/* Glassmorphism panel effect */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* Glow effects */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(0, 102, 204, 0.3);
+}
+
+.glow-accent {
+  box-shadow: 0 0 20px rgba(0, 170, 255, 0.3);
+}
+
+/* Animated gradient border */
+.gradient-border {
+  position: relative;
+  background: var(--validic-dark);
+  border-radius: 12px;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, var(--validic-primary), var(--validic-accent), var(--validic-secondary));
+  border-radius: 14px;
+  z-index: -1;
+  animation: rotate-gradient 3s linear infinite;
+}
+
+@keyframes rotate-gradient {
+  0% {
+    background: linear-gradient(45deg, var(--validic-primary), var(--validic-accent), var(--validic-secondary));
+  }
+  33% {
+    background: linear-gradient(135deg, var(--validic-accent), var(--validic-secondary), var(--validic-primary));
+  }
+  66% {
+    background: linear-gradient(225deg, var(--validic-secondary), var(--validic-primary), var(--validic-accent));
+  }
+  100% {
+    background: linear-gradient(315deg, var(--validic-primary), var(--validic-accent), var(--validic-secondary));
+  }
+}
+
+/* Panel transition for collapse/expand */
+.panel-transition {
+  transition: width 0.3s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+/* Data visualization styles */
+.metric-card {
+  background: linear-gradient(145deg, rgba(0, 102, 204, 0.1) 0%, rgba(0, 170, 255, 0.05) 100%);
+  border: 1px solid rgba(0, 170, 255, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.metric-card:hover {
+  border-color: rgba(0, 170, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Input styling */
+input, select, textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 0.5rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--validic-accent);
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.2);
+}
+
+/* Light theme specific input adjustments */
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] select:focus,
+[data-theme="light"] textarea:focus {
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+}
+
+/* Button styling */
+.btn-primary {
+  background: linear-gradient(135deg, var(--validic-primary) 0%, var(--validic-secondary) 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Loading animation */
+.loading-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Status indicator */
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: blink 1.5s infinite;
+}
+
+.status-indicator.success {
+  background: #22c55e;
+}
+
+.status-indicator.error {
+  background: #ef4444;
+}
+
+.status-indicator.pending {
+  background: #eab308;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Gentle bounce animation for user figures */
+.animate-bounce-gentle {
+  animation: bounce-gentle 0.6s ease-in-out infinite;
+}
+
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Theme-aware text utilities */
+.text-theme-primary {
+  color: var(--text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--text-muted);
+}
+
+.bg-theme-card {
+  background: var(--bg-card);
+}
+
+.bg-theme-input {
+  background: var(--bg-input);
+}
+
+.border-theme {
+  border-color: var(--border-color);
+}
+
+/* Light theme overrides for specific component patterns */
+[data-theme="light"] .text-white {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .text-gray-400 {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .text-gray-500 {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .text-gray-600 {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .bg-gray-800,
+[data-theme="light"] .bg-gray-800\/50 {
+  background: rgba(0, 102, 204, 0.08);
+}
+
+[data-theme="light"] .bg-gray-900,
+[data-theme="light"] .bg-gray-900\/50,
+[data-theme="light"] .bg-gray-900\/70 {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .border-gray-700,
+[data-theme="light"] .border-gray-700\/50 {
+  border-color: var(--border-color);
+}
+
+[data-theme="light"] .border-blue-500\/10,
+[data-theme="light"] .border-blue-500\/20 {
+  border-color: rgba(0, 102, 204, 0.15);
+}
+
+/* ========================================
+   DEV CONFIG BUTTON - Theme Aware
+   ======================================== */
+.dev-config-button {
+  background: rgba(107, 114, 128, 0.3);
+  color: #9ca3af;
+}
+
+.dev-config-button:hover {
+  color: #d1d5db;
+  background: rgba(107, 114, 128, 0.5);
+}
+
+[data-theme="light"] .dev-config-button {
+  background: rgba(107, 114, 128, 0.15);
+  color: #4b5563;
+}
+
+[data-theme="light"] .dev-config-button:hover {
+  color: #1f2937;
+  background: rgba(107, 114, 128, 0.25);
+}
+
+/* ========================================
+   LIGHT MODE CONTRAST FIXES
+   Ensure all text is readable in light mode
+   ======================================== */
+
+/* JSON/code blocks in light mode need dark text */
+[data-theme="light"] .text-gray-300 {
+  color: #374151 !important;
+}
+
+[data-theme="light"] pre {
+  color: #1f2937 !important;
+}
+
+/* Fix all gray text classes for better contrast */
+[data-theme="light"] .text-gray-400 {
+  color: #4b5563 !important;
+}
+
+[data-theme="light"] .text-gray-500 {
+  color: #374151 !important;
+}
+
+/* Specific fixes for code/preview areas */
+[data-theme="light"] .font-mono {
+  color: #1f2937;
+}
+
+[data-theme="light"] .bg-gray-900\/50 {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .bg-gray-900\/70 {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Purple text in light mode (headers in JSON) */
+[data-theme="light"] .text-purple-400 {
+  color: #7c3aed !important;
+}
+
+/* Hover states in light mode */
+[data-theme="light"] .hover\:bg-gray-700\/50:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ========================================
+   VALIDIC BRAND SPECIFIC OVERRIDES
+   ======================================== */
+
+/* Validic brand glow effects using Sky Blue */
+[data-brand="validic"] .glow-primary {
+  box-shadow: 0 0 20px rgba(31, 41, 87, 0.3);
+}
+
+[data-brand="validic"] .glow-accent {
+  box-shadow: 0 0 20px rgba(18, 193, 230, 0.3);
+}
+
+/* Validic brand metric card styling */
+[data-brand="validic"] .metric-card {
+  background: linear-gradient(145deg, rgba(31, 41, 87, 0.1) 0%, rgba(18, 193, 230, 0.05) 100%);
+  border-color: rgba(18, 193, 230, 0.2);
+}
+
+[data-brand="validic"] .metric-card:hover {
+  border-color: rgba(18, 193, 230, 0.5);
+}
+
+/* Validic brand input focus states */
+[data-brand="validic"] input:focus,
+[data-brand="validic"] select:focus,
+[data-brand="validic"] textarea:focus {
+  border-color: #12C1E6;
+  box-shadow: 0 0 10px rgba(18, 193, 230, 0.25);
+}
+
+/* Validic brand button styling */
+[data-brand="validic"] .btn-primary {
+  background: linear-gradient(135deg, #1F2957 0%, #1D75BC 100%);
+}
+
+[data-brand="validic"] .btn-primary:hover {
+  box-shadow: 0 4px 15px rgba(18, 193, 230, 0.4);
+}
+
+/* Validic brand status indicators using brand colors */
+[data-brand="validic"] .status-indicator.success {
+  background: #56D88D; /* Emerald Green */
+}
+
+[data-brand="validic"] .status-indicator.error {
+  background: #F17D58; /* Burnt Sienna */
+}
+
+[data-brand="validic"] .status-indicator.pending {
+  background: #F6E274; /* Marigold Yellow */
+}
+
+/* Validic light theme specific overrides */
+[data-brand="validic"][data-theme="light"] input,
+[data-brand="validic"][data-theme="light"] select,
+[data-brand="validic"][data-theme="light"] textarea {
+  box-shadow: 0 1px 3px rgba(31, 41, 87, 0.06);
+}
+
+[data-brand="validic"][data-theme="light"] input:focus,
+[data-brand="validic"][data-theme="light"] select:focus,
+[data-brand="validic"][data-theme="light"] textarea:focus {
+  box-shadow: 0 0 0 3px rgba(18, 193, 230, 0.2);
+}
+
+/* ========================================
+   VALIDIC BRAND - Enhanced Color Overrides
+   ======================================== */
+
+/* Override blue tailwind classes in Validic mode to use brand colors */
+[data-brand="validic"] .text-blue-400 {
+  color: #12C1E6 !important; /* Sky Blue */
+}
+
+[data-brand="validic"] .text-blue-500 {
+  color: #1D75BC !important; /* Ocean Blue */
+}
+
+[data-brand="validic"] .text-blue-300 {
+  color: #83D1F2 !important; /* Light Sky Blue */
+}
+
+[data-brand="validic"] .bg-blue-500\/20,
+[data-brand="validic"] .bg-blue-400\/20 {
+  background: rgba(18, 193, 230, 0.2) !important;
+}
+
+[data-brand="validic"] .bg-blue-500\/10,
+[data-brand="validic"] .bg-blue-400\/10 {
+  background: rgba(18, 193, 230, 0.1) !important;
+}
+
+[data-brand="validic"] .bg-blue-500\/30,
+[data-brand="validic"] .bg-blue-400\/30 {
+  background: rgba(18, 193, 230, 0.3) !important;
+}
+
+[data-brand="validic"] .border-blue-500\/20,
+[data-brand="validic"] .border-blue-400\/20 {
+  border-color: rgba(18, 193, 230, 0.2) !important;
+}
+
+[data-brand="validic"] .border-blue-500\/30 {
+  border-color: rgba(18, 193, 230, 0.3) !important;
+}
+
+/* Override purple/sparks colors in Validic mode */
+[data-brand="validic"] .text-purple-400,
+[data-brand="validic"] .text-purple-500 {
+  color: #8E9BD4 !important; /* Periwinkle */
+}
+
+[data-brand="validic"] .bg-purple-500\/20,
+[data-brand="validic"] .bg-purple-400\/20 {
+  background: rgba(142, 155, 212, 0.2) !important;
+}
+
+/* Override success green in Validic mode */
+[data-brand="validic"] .text-green-400,
+[data-brand="validic"] .text-green-500 {
+  color: #56D88D !important; /* Emerald Green */
+}
+
+[data-brand="validic"] .bg-green-500\/20,
+[data-brand="validic"] .bg-green-400\/20 {
+  background: rgba(86, 216, 141, 0.2) !important;
+}
+
+/* Override error red in Validic mode */
+[data-brand="validic"] .text-red-400,
+[data-brand="validic"] .text-red-500 {
+  color: #F17D58 !important; /* Burnt Sienna */
+}
+
+[data-brand="validic"] .bg-red-500\/20,
+[data-brand="validic"] .bg-red-500\/10,
+[data-brand="validic"] .bg-red-400\/20 {
+  background: rgba(241, 125, 88, 0.15) !important;
+}
+
+[data-brand="validic"] .border-red-500\/30 {
+  border-color: rgba(241, 125, 88, 0.3) !important;
+}
+
+/* Override warning yellow in Validic mode */
+[data-brand="validic"] .text-yellow-400,
+[data-brand="validic"] .text-yellow-500 {
+  color: #F6E274 !important; /* Marigold Yellow */
+}
+
+[data-brand="validic"] .bg-yellow-500\/20 {
+  background: rgba(246, 226, 116, 0.2) !important;
+}
+
+/* ========================================
+   VALIDIC BRAND - Glass Panel Enhancement
+   ======================================== */
+
+/* Make glass panels more distinctly Validic branded */
+[data-brand="validic"] .glass-panel {
+  border-color: rgba(18, 193, 230, 0.2);
+}
+
+[data-brand="validic"][data-theme="dark"] .glass-panel {
+  background: rgba(26, 34, 72, 0.9); /* Navy blue glass effect */
+  border-color: rgba(18, 193, 230, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Validic dark mode - enhance gray backgrounds to use navy tones */
+[data-brand="validic"][data-theme="dark"] .bg-gray-900\/50,
+[data-brand="validic"][data-theme="dark"] .bg-gray-800\/50 {
+  background: rgba(31, 41, 87, 0.5) !important; /* Dark Blue tinted */
+}
+
+[data-brand="validic"][data-theme="dark"] .bg-gray-900\/70 {
+  background: rgba(31, 41, 87, 0.7) !important;
+}
+
+/* Validic dark mode - text should use Light Sky Blue and Periwinkle */
+[data-brand="validic"][data-theme="dark"] .text-gray-300 {
+  color: #83D1F2 !important; /* Light Sky Blue */
+}
+
+[data-brand="validic"][data-theme="dark"] .text-gray-400 {
+  color: #8E9BD4 !important; /* Periwinkle */
+}
+
+[data-brand="validic"][data-theme="dark"] .text-gray-500 {
+  color: #8E9BD4 !important; /* Periwinkle */
+}
+
+[data-brand="validic"][data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(31, 41, 87, 0.15);
+}
+
+/* ========================================
+   VALIDIC BRAND - Light Mode Contrast
+   ======================================== */
+
+/* Ensure Validic light mode has proper contrast */
+[data-brand="validic"][data-theme="light"] .text-gray-300 {
+  color: #1F2957 !important; /* Dark Blue */
+}
+
+[data-brand="validic"][data-theme="light"] .text-gray-400 {
+  color: #1D75BC !important; /* Ocean Blue */
+}
+
+[data-brand="validic"][data-theme="light"] .text-gray-500 {
+  color: #1F2957 !important; /* Dark Blue */
+}
+
+[data-brand="validic"][data-theme="light"] .text-white {
+  color: #1F2957 !important; /* Dark Blue */
+}
+
+[data-brand="validic"][data-theme="light"] pre,
+[data-brand="validic"][data-theme="light"] .font-mono {
+  color: #1F2957 !important;
+}
+
+[data-brand="validic"][data-theme="light"] .text-purple-400 {
+  color: #1D75BC !important; /* Ocean Blue for headers */
+}
+
+/* Validic light mode background adjustments */
+[data-brand="validic"][data-theme="light"] .bg-gray-900\/50,
+[data-brand="validic"][data-theme="light"] .bg-gray-800\/50 {
+  background: rgba(18, 193, 230, 0.08) !important;
+}
+
+[data-brand="validic"][data-theme="light"] .hover\:bg-gray-700\/50:hover {
+  background: rgba(18, 193, 230, 0.15) !important;
+}
+
+/* ========================================
+   VALIDIC BRAND - Accent Border Effect
+   A subtle Sky Blue accent on the left of panels
+   ======================================== */
+
+[data-brand="validic"] .glass-panel {
+  position: relative;
+}
+
+[data-brand="validic"] .glass-panel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: linear-gradient(180deg, #12C1E6 0%, #1D75BC 50%, #12C1E6 100%);
+  border-radius: 0 2px 2px 0;
+  opacity: 0.6;
+}
+
+[data-brand="validic"][data-theme="light"] .glass-panel::before {
+  background: linear-gradient(180deg, #12C1E6 0%, #1F2957 50%, #12C1E6 100%);
+  opacity: 0.5;
+}
