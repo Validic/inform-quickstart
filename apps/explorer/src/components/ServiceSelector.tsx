@@ -4,12 +4,8 @@ import {
   Database,
   RefreshCw,
   Sparkles,
-  Wand2,
-  Eye,
-  Zap,
   User,
   Users,
-  Pencil,
   LucideIcon,
 } from 'lucide-react';
 import { ServiceType, SERVICES, SERVICE_CATEGORIES, ServiceConfig } from '@/types';
@@ -18,12 +14,8 @@ const iconMap: Record<string, LucideIcon> = {
   Database,
   RefreshCw,
   Sparkles,
-  Wand2,
-  Eye,
-  Zap,
   User,
   Users,
-  Pencil,
 };
 
 interface ServiceSelectorProps {
