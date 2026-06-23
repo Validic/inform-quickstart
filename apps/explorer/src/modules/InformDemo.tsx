@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import CollapsiblePanel from '@/components/CollapsiblePanel';
 import ConfigPanel from '@/components/ConfigPanel';
@@ -35,23 +35,16 @@ const defaultHealthStatus: HealthStatus = {
   dataGeneratorUrl: 'idle',
 };
 
+type LayoutMode = 'grid' | 'accordion';
+type PanelKey = 'config' | 'setup' | 'response' | 'help';
+
 export default function InformDemo({ apiBaseUrl }: { apiBaseUrl?: string }) {
   const { config: envConfig, users, isConfigured, isLoading: configLoading } = useConfig();
 
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  type LayoutMode = 'grid' | 'accordion';
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('accordion');
 
-  const defaultConfig = useMemo((): ConfigValues => ({
-    coreUrl: envConfig?.apiUrl || 'https://api.v2.validic.com',
-    dataGeneratorUrl: envConfig?.datagenUrl || 'https://datagen.prod.validic.com',
-    authToken: envConfig?.token || '',
-    organizationId: envConfig?.orgId || '',
-    headers: [],
-  }), [envConfig]);
-
-  type PanelKey = 'config' | 'setup' | 'response' | 'help';
   const [panelStates, setPanelStates] = useState<Record<PanelKey, boolean>>({
     config: true,
     setup: false,
@@ -63,7 +56,13 @@ export default function InformDemo({ apiBaseUrl }: { apiBaseUrl?: string }) {
     setPanelStates(prev => ({ ...prev, [panel]: !prev[panel] }));
   }, []);
 
-  const [config, setConfig] = useState<ConfigValues>(defaultConfig);
+  const [config, setConfig] = useState<ConfigValues>(() => ({
+    coreUrl: envConfig?.apiUrl || 'https://api.v2.validic.com',
+    dataGeneratorUrl: envConfig?.datagenUrl || 'https://datagen.prod.validic.com',
+    authToken: envConfig?.token || '',
+    organizationId: envConfig?.orgId || '',
+    headers: [],
+  }));
 
   useEffect(() => {
     if (envConfig) {
@@ -131,7 +130,9 @@ export default function InformDemo({ apiBaseUrl }: { apiBaseUrl?: string }) {
     setResponse(apiResponse);
 
     const historyEntry: HistoryEntry = {
-      id: crypto.randomUUID(),
+      id: (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       serviceType: selectedService,
       response: apiResponse,
       setup: { ...setup },
