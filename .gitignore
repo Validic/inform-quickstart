@@ -7,3 +7,4 @@
 .next/
 dist/
 *.tsbuildinfo
+/package-lock.json
