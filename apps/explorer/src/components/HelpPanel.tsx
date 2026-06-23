@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Users, Database, RefreshCw, Sparkles, Wand2, Pencil, Eye, Zap, ChevronRight, Heart, Activity, Dices, Calendar, FileText, TrendingUp, Target, AlertCircle } from 'lucide-react';
+import { User, Users, Database, RefreshCw, Sparkles, Heart, Activity, Dices, Calendar, TrendingUp, Target, AlertCircle } from 'lucide-react';
 import { ServiceType } from '@/types';
 
 type AppMode = 'api-demo' | 'impact';
@@ -26,16 +26,11 @@ const apiHelpTabs: HelpTab[] = [
   { id: 'get-user-data', name: 'Get User Data', icon: <Database className="w-4 h-4" />, color: '#00AAFF', category: 'data' },
   { id: 'replay-stream', name: 'Replay Stream', icon: <RefreshCw className="w-4 h-4" />, color: '#00CCFF', category: 'data' },
   { id: 'generate-data', name: 'Generate Data', icon: <Sparkles className="w-4 h-4" />, color: '#22c55e', category: 'data' },
-  { id: 'sparks-create', name: 'Create Prompt', icon: <Wand2 className="w-4 h-4" />, color: '#a855f7', category: 'sparks' },
-  { id: 'sparks-update', name: 'Update Prompt', icon: <Pencil className="w-4 h-4" />, color: '#8b5cf6', category: 'sparks' },
-  { id: 'sparks-view', name: 'View Prompts', icon: <Eye className="w-4 h-4" />, color: '#f59e0b', category: 'sparks' },
-  { id: 'sparks-invoke', name: 'Invoke Prompt', icon: <Zap className="w-4 h-4" />, color: '#ef4444', category: 'sparks' },
 ];
 
 const apiCategories = [
   { id: 'users', name: 'Users' },
   { id: 'data', name: 'Data' },
-  { id: 'sparks', name: 'Sparks' },
 ];
 
 // Impact mode tabs and categories
@@ -356,134 +351,6 @@ const helpGuides: Record<string, HelpGuide> = {
       },
     ],
     exampleNote: 'Generated data appears in Get User Data requests. Useful for testing without real devices.',
-  },
-
-  'sparks-create': {
-    title: 'Create Sparks Prompt',
-    description: 'Create a new AI prompt template that defines how AI processes health data.',
-    prerequisites: [
-      'Sparks URL configured',
-      'Valid Organization ID and Auth Token',
-    ],
-    steps: [
-      {
-        title: 'Open the Prompt Builder',
-        description: 'The Sparks panel shows a visual builder. Start by naming your prompt.',
-      },
-      {
-        title: 'Configure the Model',
-        description: 'Select the AI model. Claude 3.5 Sonnet is recommended.',
-      },
-      {
-        title: 'Write System Instructions',
-        description: 'Define the AI\'s role and behavior in the system message.',
-        tip: 'Be specific about persona and advice constraints.',
-      },
-      {
-        title: 'Create User Message Template',
-        description: 'Use Handlebars syntax ({{variable}}) for dynamic templates.',
-      },
-      {
-        title: 'Set Inference Parameters',
-        description: 'Adjust temperature, top_p, and other generation parameters.',
-      },
-      {
-        title: 'Create the Prompt',
-        description: 'Click "Execute" to save to Sparks.',
-      },
-    ],
-    exampleNote: 'Created prompt receives a prompt_id for use with Invoke.',
-  },
-
-  'sparks-update': {
-    title: 'Update Sparks Prompt',
-    description: 'Modify an existing prompt. Updates are versioned.',
-    prerequisites: [
-      'Existing prompt in Sparks',
-      'Prompt ID to update',
-    ],
-    steps: [
-      {
-        title: 'Select the Prompt',
-        description: 'Choose the prompt from the dropdown in API Setup.',
-      },
-      {
-        title: 'Review Current Config',
-        description: 'The builder loads current configuration.',
-      },
-      {
-        title: 'Make Your Changes',
-        description: 'Modify name, messages, model, or parameters.',
-      },
-      {
-        title: 'Save Updates',
-        description: 'Click "Execute" to save. A new version is created.',
-      },
-    ],
-    exampleNote: 'Updated prompt used for subsequent Invoke calls. Previous versions retained.',
-  },
-
-  'sparks-view': {
-    title: 'View Sparks Prompts',
-    description: 'List and inspect all prompts in your organization.',
-    prerequisites: [
-      'Sparks URL configured',
-      'Valid Organization ID and Auth Token',
-    ],
-    steps: [
-      {
-        title: 'Execute the Request',
-        description: 'Click "Execute" to fetch all prompts.',
-      },
-      {
-        title: 'Browse Prompts',
-        description: 'Review prompt cards showing name, model, and creation info.',
-      },
-      {
-        title: 'Expand for Details',
-        description: 'Click a card to see full configuration.',
-        tip: 'Copy prompt_id for Invoke requests.',
-      },
-    ],
-    exampleNote: 'View full configurations and copy IDs for other operations.',
-  },
-
-  'sparks-invoke': {
-    title: 'Invoke Sparks Prompt',
-    description: 'Execute an AI prompt with real user data to generate personalized responses.',
-    prerequisites: [
-      'At least one prompt created',
-      'User ID with health data',
-      'Valid date range with data',
-    ],
-    steps: [
-      {
-        title: 'Select a Prompt',
-        description: 'Choose the prompt template to invoke.',
-      },
-      {
-        title: 'Configure User & Dates',
-        description: 'Set User ID and date range for analysis.',
-      },
-      {
-        title: 'Select Metric Types',
-        description: 'Choose which health metrics to include (steps, sleep, etc.).',
-        tip: 'Select metrics relevant to your prompt.',
-      },
-      {
-        title: 'Add Variable Values',
-        description: 'If prompt uses custom Handlebars variables, provide values.',
-      },
-      {
-        title: 'Invoke',
-        description: 'Click "Execute" to generate AI response.',
-      },
-      {
-        title: 'Review AI Response',
-        description: 'Sparks panel displays the generated content.',
-      },
-    ],
-    exampleNote: 'Response time depends on data amount and prompt complexity.',
   },
 };
 
