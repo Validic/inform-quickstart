@@ -37,7 +37,59 @@ export default function CGMChart({ readings, unit }: CGMChartProps) {
   // Generate unique ID for this chart instance (for gradient)
   const [gradientId] = useState(() => `cgm-gradient-${Math.random().toString(36).slice(2, 11)}`);
 
-  // Early return for empty readings
+  // Chart dimensions (constants, used in memos below)
+  const chartHeight = 120;
+  const minValue = 40;
+  const maxValue = 300;
+  const valueRange = maxValue - minValue;
+
+  // Sort readings by time
+  const sortedReadings = useMemo(() => {
+    if (!readings || readings.length === 0) return [];
+    return [...readings].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+  }, [readings]);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    if (sortedReadings.length === 0) return null;
+    const values = sortedReadings.map(r => r.value);
+    const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const stdDev = Math.round(Math.sqrt(values.reduce((sum, v) => sum + Math.pow(v - avg, 2), 0) / values.length));
+    const inRange = values.filter(v => v >= 70 && v <= 180).length;
+    const belowRange = values.filter(v => v < 70).length;
+    const aboveRange = values.filter(v => v > 180).length;
+    const timeInRange = Math.round((inRange / values.length) * 100);
+    const timeBelow = Math.round((belowRange / values.length) * 100);
+    const timeAbove = Math.round((aboveRange / values.length) * 100);
+    const estimatedA1C = ((avg + 46.7) / 28.7).toFixed(1);
+    return { avg, min, max, stdDev, timeInRange, timeBelow, timeAbove, estimatedA1C, total: values.length };
+  }, [sortedReadings]);
+
+  // Generate SVG path for the glucose line
+  const linePath = useMemo(() => {
+    if (sortedReadings.length < 2) return '';
+    const points = sortedReadings.map((reading, i) => {
+      const x = (i / (sortedReadings.length - 1)) * 100;
+      const y = chartHeight - ((reading.value - minValue) / valueRange) * chartHeight;
+      return `${x},${y}`;
+    });
+    return `M ${points.join(' L ')}`;
+  }, [sortedReadings, chartHeight, minValue, valueRange]);
+
+  // Generate area path (filled area under the line)
+  const areaPath = useMemo(() => {
+    if (sortedReadings.length < 2) return '';
+    const points = sortedReadings.map((reading, i) => {
+      const x = (i / (sortedReadings.length - 1)) * 100;
+      const y = chartHeight - ((reading.value - minValue) / valueRange) * chartHeight;
+      return `${x},${y}`;
+    });
+    return `M 0,${chartHeight} L ${points.join(' L ')} L 100,${chartHeight} Z`;
+  }, [sortedReadings, chartHeight, minValue, valueRange]);
+
+  // Early return for empty readings — after all hooks
   if (!readings || readings.length === 0) {
     return (
       <div className="bg-gray-900/50 rounded-xl p-4 text-center text-gray-500">
@@ -45,66 +97,6 @@ export default function CGMChart({ readings, unit }: CGMChartProps) {
       </div>
     );
   }
-
-  // Sort readings by time
-  const sortedReadings = useMemo(() => {
-    return [...readings].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-  }, [readings]);
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    const values = sortedReadings.map(r => r.value);
-    const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const stdDev = Math.round(Math.sqrt(values.reduce((sum, v) => sum + Math.pow(v - avg, 2), 0) / values.length));
-
-    // Time in range calculations
-    const inRange = values.filter(v => v >= 70 && v <= 180).length;
-    const belowRange = values.filter(v => v < 70).length;
-    const aboveRange = values.filter(v => v > 180).length;
-
-    const timeInRange = Math.round((inRange / values.length) * 100);
-    const timeBelow = Math.round((belowRange / values.length) * 100);
-    const timeAbove = Math.round((aboveRange / values.length) * 100);
-
-    // Estimated A1C (rough approximation)
-    const estimatedA1C = ((avg + 46.7) / 28.7).toFixed(1);
-
-    return { avg, min, max, stdDev, timeInRange, timeBelow, timeAbove, estimatedA1C, total: values.length };
-  }, [sortedReadings]);
-
-  // Chart dimensions
-  const chartHeight = 120;
-  const minValue = 40;
-  const maxValue = 300;
-  const valueRange = maxValue - minValue;
-
-  // Generate SVG path for the glucose line
-  const linePath = useMemo(() => {
-    if (sortedReadings.length < 2) return '';
-
-    const points = sortedReadings.map((reading, i) => {
-      const x = (i / (sortedReadings.length - 1)) * 100;
-      const y = chartHeight - ((reading.value - minValue) / valueRange) * chartHeight;
-      return `${x},${y}`;
-    });
-
-    return `M ${points.join(' L ')}`;
-  }, [sortedReadings]);
-
-  // Generate area path (filled area under the line)
-  const areaPath = useMemo(() => {
-    if (sortedReadings.length < 2) return '';
-
-    const points = sortedReadings.map((reading, i) => {
-      const x = (i / (sortedReadings.length - 1)) * 100;
-      const y = chartHeight - ((reading.value - minValue) / valueRange) * chartHeight;
-      return `${x},${y}`;
-    });
-
-    return `M 0,${chartHeight} L ${points.join(' L ')} L 100,${chartHeight} Z`;
-  }, [sortedReadings]);
 
   const handleCopyJson = async (e: React.MouseEvent) => {
     e.stopPropagation();
