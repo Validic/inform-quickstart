@@ -6,3 +6,4 @@
 !**/.env.example
 .next/
 dist/
+*.tsbuildinfo
