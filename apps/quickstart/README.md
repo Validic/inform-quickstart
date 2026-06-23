@@ -1,3 +1,5 @@
+> **Part of the inform-quickstart monorepo.** See the [root README](../../README.md) to compare apps.
+
 # Inform Quickstart
 
 A working web app that demonstrates the four steps of the [Validic Inform API](https://developer.validic.com):
