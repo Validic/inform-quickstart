@@ -1,28 +1,8 @@
 {
   "name": "inform-quickstart",
-  "version": "1.0.0",
-  "description": "A sample app demonstrating the Validic Inform API — provision a user, connect a device, explore health data, and stream real-time events.",
-  "main": "server.js",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "test": "jest --passWithNoTests"
-  },
-  "engines": {
-    "node": ">=22.0.0"
-  },
-  "dependencies": {
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1"
-  },
-  "devDependencies": {
-    "jest": "^30.3.0",
-    "nock": "^14.0.12",
-    "supertest": "^7.2.2"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ]
+    "quickstart": "npm --prefix apps/quickstart install && npm --prefix apps/quickstart start",
+    "explorer": "npm --prefix apps/explorer install && npm --prefix apps/explorer run dev"
   }
 }

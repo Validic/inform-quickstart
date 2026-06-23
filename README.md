@@ -1,66 +1,32 @@
 # Inform Quickstart
 
-A working web app that demonstrates the four steps of the [Validic Inform API](https://developer.validic.com):
-provision a user, connect a device, retrieve health data, and stream real-time events — all with your own credentials.
+Two ways to get started building with the [Validic Inform API](https://developer.validic.com). Pick the one that fits:
 
-Clone it, run it, then use it as the starting point for whatever you want to build.
+| App | Best for | Stack | Start |
+|---|---|---|---|
+| **quickstart** | Seeing the API work in 5 minutes | Node.js + vanilla HTML | `npm run quickstart` |
+| **explorer** | A full API workbench with visual UI | Next.js + React | `npm run explorer` |
+
+Both apps require the same credentials — your Org ID and Auth Token from [api.dashboard.validic.com](https://api.dashboard.validic.com).
 
 ## Prerequisites
 
-- Node.js 22 or higher
-- A Validic Inform account — [free sandbox at api.dashboard.validic.com](https://api.dashboard.validic.com)
+- Node.js 22+
+- A Validic Inform account ([free sandbox available](https://api.dashboard.validic.com))
 
-## Setup
+## Quickstart
 
-**1. Clone this repo**
+A minimal Express app that demonstrates the four core steps:
+provision a user, connect a device, retrieve health data, and stream real-time events.
 
-```bash
-git clone https://github.com/validic/inform-quickstart.git
-cd inform-quickstart
-npm install
-```
+→ See [apps/quickstart/README.md](apps/quickstart/README.md)
 
-**2. Add your credentials**
+## Explorer
 
-```bash
-cp .env.example .env
-```
+A full-featured API workbench with a three-panel UI: configure credentials,
+build and execute API requests, and inspect responses with data visualization.
 
-Open `.env` and fill in two values:
-
-```
-ORG_ID=your_org_id_here
-ORG_TOKEN=your_org_token_here
-```
-
-Both are available in your [Validic dashboard](https://api.dashboard.validic.com).
-
-**3. Start the app**
-
-```bash
-npm start
-```
-
-On startup, the app finds or creates a Validic user and stream for your org automatically. Open [http://localhost:3000](http://localhost:3000).
-
-## What you're looking at
-
-The app walks through the four-step Inform integration pattern:
-
-| Section | What it demonstrates |
-|---------|---------------------|
-| **Connect Your Device** | `GET /users/:id/apps` — list connected sources; redirect to Marketplace |
-| **Your Data** | `GET /users/:id/:type` — pull 30 days of normalized health data |
-| **Live Stream** | SSE via `/streams/:id/connect` — real-time data as it arrives |
-| **Replay last 30 days** | SSE via `/replay` — historical events through the same stream interface |
-
-All Validic API calls happen in `server.js`. The frontend only talks to `localhost`.
-
-## Extending this
-
-- **Add a database** — swap `.env` state for SQLite or Postgres to support multiple users
-- **Add a frontend framework** — the `public/` folder is plain HTML/JS; drop in React or Vue
-- **Add alert rules** — use the [Rules API](https://developer.validic.com) to trigger notifications when thresholds are crossed
+→ See [apps/explorer/README.md](apps/explorer/README.md)
 
 ## API Reference
 
