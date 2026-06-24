@@ -126,7 +126,16 @@ export default function InformDemo({ apiBaseUrl }: { apiBaseUrl?: string }) {
     setResponse(null);
     await new Promise((resolve) => setTimeout(resolve, 300));
 
-    const apiResponse = await executeApiRequest(config, setup, selectedService, apiBaseUrl);
+    let activeSetup = setup;
+    if (selectedService === 'create-user' && !setup.userId) {
+      const uid = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      activeSetup = { ...setup, userId: uid };
+      setSetup(activeSetup);
+    }
+
+    const apiResponse = await executeApiRequest(config, activeSetup, selectedService, apiBaseUrl);
     setResponse(apiResponse);
 
     const historyEntry: HistoryEntry = {

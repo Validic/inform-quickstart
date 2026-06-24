@@ -123,6 +123,7 @@ export interface DataTypeGroup {
 export type ServiceType =
   | 'get-user'
   | 'get-users'
+  | 'create-user'
   | 'get-user-data'
   | 'replay-stream'
   | 'generate-data';
@@ -159,6 +160,13 @@ export const SERVICES: ServiceConfig[] = [
     color: '#0088EE',
   },
   {
+    id: 'create-user',
+    name: 'Create User',
+    description: 'Provision a new user in the organization',
+    icon: 'UserPlus',
+    color: '#0088EE',
+  },
+  {
     id: 'get-user-data',
     name: 'Get User Data',
     description: 'Fetch health data for a specific user',
@@ -185,7 +193,7 @@ export const SERVICE_CATEGORIES: ServiceCategoryConfig[] = [
   {
     id: 'users',
     name: 'Users',
-    services: ['get-user', 'get-users'],
+    services: ['get-user', 'get-users', 'create-user'],
   },
   {
     id: 'data',

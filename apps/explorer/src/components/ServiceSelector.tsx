@@ -5,6 +5,7 @@ import {
   RefreshCw,
   Sparkles,
   User,
+  UserPlus,
   Users,
   LucideIcon,
 } from 'lucide-react';
@@ -15,6 +16,7 @@ const iconMap: Record<string, LucideIcon> = {
   RefreshCw,
   Sparkles,
   User,
+  UserPlus,
   Users,
 };
 
