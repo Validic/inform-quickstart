@@ -59,6 +59,12 @@ export function buildRequest(
       return { method: 'GET', url, headers };
     }
 
+    case 'create-user': {
+      const url = `${trimUrl(config.coreUrl)}/organizations/${config.organizationId}/users?token=${config.authToken}`;
+      const body = { uid: setup.userId };
+      return { method: 'POST', url, headers, body };
+    }
+
     case 'get-user-data': {
       const coreUrl = trimUrl(config.coreUrl);
       const baseUrl = setup.dataType
