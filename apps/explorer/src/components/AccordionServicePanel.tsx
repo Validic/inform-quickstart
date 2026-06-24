@@ -48,6 +48,7 @@ interface AccordionServicePanelProps {
 const serviceIcons: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
   'get-user': User,
   'get-users': Users,
+  'create-user': UserPlus,
   'get-user-data': Database,
   'replay-stream': RefreshCw,
   'generate-data': Activity,
