@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, ChevronUp, Clock, MapPin, Smartphone, Globe, Copy, Check, Store } from 'lucide-react';
 import { DataRecord } from '@/types';
 import { getDisplayName } from '@/data/names';
@@ -341,12 +342,10 @@ export default function UserCard({ user, index }: UserCardProps) {
         </div>
       )}
 
-      {/* Marketplace Modal */}
-      {marketplaceOpen && (
-        <MarketplaceModal
-          user={user}
-          onClose={() => setMarketplaceOpen(false)}
-        />
+      {/* Marketplace Modal — portaled to body to escape any ancestor stacking contexts */}
+      {marketplaceOpen && typeof document !== 'undefined' && createPortal(
+        <MarketplaceModal user={user} onClose={() => setMarketplaceOpen(false)} />,
+        document.body
       )}
 
       {/* Expanded Content */}
