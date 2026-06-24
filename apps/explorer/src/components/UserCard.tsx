@@ -318,17 +318,6 @@ export default function UserCard({ user, index }: UserCardProps) {
           </div>
         </div>
 
-        {/* Connect Sources Button */}
-        {user.marketplace && (
-          <button
-            onClick={(e) => { e.stopPropagation(); setMarketplaceOpen(true); }}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-green-500/15 text-green-400 border border-green-500/25 hover:bg-green-500/25 transition-colors"
-          >
-            <Store className="w-3 h-3" />
-            Connect Sources
-          </button>
-        )}
-
         {/* Expand Toggle */}
         <div className="flex-shrink-0">
           {isExpanded ? (
@@ -338,6 +327,19 @@ export default function UserCard({ user, index }: UserCardProps) {
           )}
         </div>
       </button>
+
+      {/* Connect Sources Button */}
+      {user.marketplace && (
+        <div className="px-4 pb-3">
+          <button
+            onClick={() => setMarketplaceOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-green-500/15 text-green-400 border border-green-500/25 hover:bg-green-500/25 transition-colors"
+          >
+            <Store className="w-3 h-3" />
+            Connect Sources
+          </button>
+        </div>
+      )}
 
       {/* Marketplace Modal */}
       {marketplaceOpen && (
