@@ -30,7 +30,11 @@ export default function MarketplaceModal({ user, onClose }: MarketplaceModalProp
   const [error, setError] = useState<string | null>(null);
 
   const fetchSources = useCallback(async () => {
-    if (!user.marketplace?.url) return;
+    if (!user.marketplace?.url) {
+      setError('No marketplace URL available');
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -56,7 +60,7 @@ export default function MarketplaceModal({ user, onClose }: MarketplaceModalProp
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
