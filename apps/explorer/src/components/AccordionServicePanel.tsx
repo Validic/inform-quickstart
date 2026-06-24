@@ -6,6 +6,7 @@ import {
   ChevronRight,
   User,
   Users,
+  UserPlus,
   Calendar,
   Database,
   Activity,
@@ -291,6 +292,29 @@ export default function AccordionServicePanel({
     </div>
   );
 
+  const renderCreateUserContent = () => (
+    <div className="space-y-4">
+      <div>
+        <label className="flex items-center gap-2 text-sm text-gray-400 mb-1">
+          <UserPlus className="w-4 h-4" />
+          User ID (uid)
+        </label>
+        <input
+          type="text"
+          value={setup.userId}
+          onChange={(e) => handleChange('userId', e.target.value)}
+          placeholder="Leave blank to auto-generate"
+          className="w-full"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Your reference ID for this user. Must be unique within your org.
+        </p>
+      </div>
+      {renderExecuteButton()}
+      {renderRequestPreview('create-user')}
+    </div>
+  );
+
   const renderGetUserDataContent = () => (
     <div className="space-y-4">
       {renderUserIdInput()}
@@ -391,6 +415,8 @@ export default function AccordionServicePanel({
     switch (serviceType) {
       case 'get-user':
         return renderGetUserContent();
+      case 'create-user':
+        return renderCreateUserContent();
       case 'get-users':
         return renderGetUsersContent();
       case 'get-user-data':
