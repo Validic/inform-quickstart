@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Clock, MapPin, Smartphone, Globe, Copy, Check } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, MapPin, Smartphone, Globe, Copy, Check, Store } from 'lucide-react';
 import { DataRecord } from '@/types';
 import { getDisplayName } from '@/data/names';
+import MarketplaceModal from '@/components/MarketplaceModal';
 
 interface UserCardProps {
   user: DataRecord;
@@ -213,6 +214,7 @@ export default function UserCard({ user, index }: UserCardProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
 
   const userId = user.uid || user.id || 'default';
   const userColor = getUserColor(userId);
@@ -316,6 +318,17 @@ export default function UserCard({ user, index }: UserCardProps) {
           </div>
         </div>
 
+        {/* Connect Sources Button */}
+        {user.marketplace && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setMarketplaceOpen(true); }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-green-500/15 text-green-400 border border-green-500/25 hover:bg-green-500/25 transition-colors"
+          >
+            <Store className="w-3 h-3" />
+            Connect Sources
+          </button>
+        )}
+
         {/* Expand Toggle */}
         <div className="flex-shrink-0">
           {isExpanded ? (
@@ -325,6 +338,14 @@ export default function UserCard({ user, index }: UserCardProps) {
           )}
         </div>
       </button>
+
+      {/* Marketplace Modal */}
+      {marketplaceOpen && (
+        <MarketplaceModal
+          user={user}
+          onClose={() => setMarketplaceOpen(false)}
+        />
+      )}
 
       {/* Expanded Content */}
       {isExpanded && (
