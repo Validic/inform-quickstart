@@ -61,7 +61,8 @@ export function buildRequest(
 
     case 'create-user': {
       const url = `${trimUrl(config.coreUrl)}/organizations/${config.organizationId}/users?token=${config.authToken}`;
-      const body = { uid: setup.userId };
+      const body: Record<string, string> = {};
+      if (setup.userId) body.uid = setup.userId;
       return { method: 'POST', url, headers, body };
     }
 

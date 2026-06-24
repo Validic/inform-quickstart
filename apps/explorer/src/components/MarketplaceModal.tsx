@@ -39,8 +39,8 @@ export default function MarketplaceModal({ user, onClose }: MarketplaceModalProp
     setError(null);
     try {
       const redirectUri = encodeURIComponent(window.location.href);
-      const url = `${user.marketplace.url}&format=json&redirect_uri=${redirectUri}`;
-      const res = await fetch(url);
+      const marketplaceUrl = `${user.marketplace.url}&format=json&redirect_uri=${redirectUri}`;
+      const res = await fetch(`/api/proxy?url=${encodeURIComponent(marketplaceUrl)}`);
       if (!res.ok) throw new Error(`Failed to load sources (${res.status})`);
       const data = await res.json();
       setSources(Array.isArray(data) ? data : []);
@@ -53,6 +53,11 @@ export default function MarketplaceModal({ user, onClose }: MarketplaceModalProp
 
   useEffect(() => {
     fetchSources();
+  }, [fetchSources]);
+
+  useEffect(() => {
+    window.addEventListener('focus', fetchSources);
+    return () => window.removeEventListener('focus', fetchSources);
   }, [fetchSources]);
 
   const userId = user.user?.user_id || user.id || 'Unknown';
