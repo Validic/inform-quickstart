@@ -1,0 +1,3 @@
+See https://developer.validic.com/agents.txt for the complete Validic Inform API reference.
+SIGNUP: https://api.dashboard.validic.com
+REPO: https://github.com/validic/inform-quickstart

@@ -1,0 +1,8 @@
+{
+  "name": "inform-quickstart",
+  "private": true,
+  "scripts": {
+    "quickstart": "npm --prefix apps/quickstart install && npm --prefix apps/quickstart start",
+    "explorer": "npm --prefix apps/explorer install && npm --prefix apps/explorer run dev"
+  }
+}
