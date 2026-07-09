@@ -11,6 +11,8 @@ Two ways to get started building with the [Inform API](https://developer.validic
 
 Both apps require the same credentials — your Org ID and Auth Token. Sign up for a free sandbox at [dashboard.validic.com](https://dashboard.validic.com) to get them.
 
+> **Local development tools only.** These sample apps are meant to run on your machine. The explorer app's API routes proxy requests using your credentials, so don't deploy it to a public URL as-is.
+
 ## Prerequisites
 
 - Node.js 22+

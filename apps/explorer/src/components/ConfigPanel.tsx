@@ -158,7 +158,7 @@ export default function ConfigPanel({ config, onChange, healthStatus, onHealthCh
               className="w-full pr-10"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Your token is stored in browser memory only
+              Your token is stored only in this browser (localStorage) until you clear the config
             </p>
           </div>
         </div>

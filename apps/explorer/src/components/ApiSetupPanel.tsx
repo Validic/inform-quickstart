@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import {
   User,
-  Users,
   Calendar,
   Database,
   Activity,
@@ -26,8 +25,6 @@ interface ApiSetupPanelProps {
   config: ConfigValues;
   onRequestBodyChange?: (body: string) => void;
   requestBody?: string;
-  onFetchAllUsers?: () => void;
-  isFetchingAllUsers?: boolean;
 }
 
 export default function ApiSetupPanel({
@@ -38,8 +35,6 @@ export default function ApiSetupPanel({
   onExecute,
   isLoading,
   config,
-  onFetchAllUsers,
-  isFetchingAllUsers,
 }: ApiSetupPanelProps) {
   const { users } = useConfig();
   const [availableSources, setAvailableSources] = useState<string[]>([]);
@@ -121,27 +116,6 @@ export default function ApiSetupPanel({
           <p className="text-xs text-gray-500 mt-1">
             Sort users by creation date
           </p>
-
-          {/* Fetch All Users Button */}
-          {onFetchAllUsers && (
-            <button
-              onClick={onFetchAllUsers}
-              disabled={isFetchingAllUsers || isLoading}
-              className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isFetchingAllUsers ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Fetching All Users...
-                </>
-              ) : (
-                <>
-                  <Users className="w-4 h-4" />
-                  Fetch All Users
-                </>
-              )}
-            </button>
-          )}
         </div>
       )}
 

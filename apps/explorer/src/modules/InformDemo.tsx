@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { LayoutGrid, List, Upload } from 'lucide-react';
 import CollapsiblePanel from '@/components/CollapsiblePanel';
 import ConfigPanel from '@/components/ConfigPanel';
@@ -81,6 +81,12 @@ export default function InformDemo({ apiBaseUrl }: { apiBaseUrl?: string }) {
 
   const [setup, setSetup] = useState<ApiSetup>(defaultSetup);
   const [selectedService, setSelectedService] = useState<ServiceType>('get-user');
+  // Tracks the live selected service so in-flight requests can detect if the
+  // user switched services before the request resolved.
+  const selectedServiceRef = useRef(selectedService);
+  useEffect(() => {
+    selectedServiceRef.current = selectedService;
+  }, [selectedService]);
   const [response, setResponse] = useState<ApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPaginating, setIsPaginating] = useState(false);
@@ -124,12 +130,14 @@ export default function InformDemo({ apiBaseUrl }: { apiBaseUrl?: string }) {
       return;
     }
 
+    const requestedService = selectedService;
+
     setIsLoading(true);
     setResponse(null);
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     let activeSetup = setup;
-    if (selectedService === 'create-user' && !setup.userId) {
+    if (requestedService === 'create-user' && !setup.userId) {
       const uid = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -137,16 +145,23 @@ export default function InformDemo({ apiBaseUrl }: { apiBaseUrl?: string }) {
       setSetup(activeSetup);
     }
 
-    const apiResponse = await executeApiRequest(config, activeSetup, selectedService, apiBaseUrl);
+    const apiResponse = await executeApiRequest(config, activeSetup, requestedService, apiBaseUrl);
+
+    if (requestedService !== selectedServiceRef.current) {
+      // The user switched services while this request was in flight; discard the result.
+      setIsLoading(false);
+      return;
+    }
+
     setResponse(apiResponse);
 
     const historyEntry: HistoryEntry = {
       id: (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      serviceType: selectedService,
+      serviceType: requestedService,
       response: apiResponse,
-      setup: { ...setup },
+      setup: { ...activeSetup },
       timestamp: new Date().toISOString(),
     };
     setHistory(prev => [historyEntry, ...prev].slice(0, 50));

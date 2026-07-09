@@ -38,8 +38,6 @@ interface AccordionServicePanelProps {
   isLoading: boolean;
   config: ConfigValues;
   users: DemoUser[];
-  onFetchAllUsers?: () => void;
-  isFetchingAllUsers?: boolean;
   onRequestBodyChange?: (body: string) => void;
   requestBody?: string;
 }
@@ -72,8 +70,6 @@ export default function AccordionServicePanel({
   isLoading,
   config,
   users,
-  onFetchAllUsers,
-  isFetchingAllUsers,
 }: AccordionServicePanelProps) {
   const [expandedService, setExpandedService] = useState<ServiceType | null>(selectedService);
   const [availableSources, setAvailableSources] = useState<string[]>([]);
@@ -275,26 +271,6 @@ export default function AccordionServicePanel({
           </button>
         </div>
       </div>
-
-      {onFetchAllUsers && (
-        <button
-          onClick={onFetchAllUsers}
-          disabled={isFetchingAllUsers || isLoading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-50"
-        >
-          {isFetchingAllUsers ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Fetching...
-            </>
-          ) : (
-            <>
-              <Users className="w-4 h-4" />
-              Fetch All Users
-            </>
-          )}
-        </button>
-      )}
 
       {renderExecuteButton()}
       {renderRequestPreview('get-users')}

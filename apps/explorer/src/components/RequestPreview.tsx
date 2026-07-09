@@ -55,7 +55,7 @@ export default function RequestPreview({ config, setup, serviceType }: RequestPr
           <button
             onClick={handleCopy}
             className="p-1.5 rounded hover:bg-gray-700/50 transition-colors"
-            title="Copy as cURL"
+            title="Copy as cURL. Copied command contains your live token"
           >
             {copied ? (
               <Check className="w-4 h-4 text-green-400" />
