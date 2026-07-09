@@ -72,6 +72,15 @@ async function loadUsers() {
   const link = document.getElementById('marketplace-link');
   if (status.marketplace_url) link.href = status.marketplace_url;
 
+  const btnConnect = document.getElementById('btn-connect');
+  if (!status.stream_id) {
+    btnConnect.disabled = true;
+    btnConnect.title = 'Live streaming unavailable: no stream could be created (org stream quota may be full). See server logs.';
+  } else {
+    btnConnect.disabled = false;
+    btnConnect.removeAttribute('title');
+  }
+
   select.addEventListener('change', () => {
     selectedUserId = select.value;
     dataCache = {};
@@ -85,34 +94,41 @@ async function loadUsers() {
 // CONNECTED APPS (Step 2)
 // ============================================================
 
+// Source types are snake_case identifiers (e.g. "yoo_fitness") — display as "Yoo Fitness"
+function formatSourceName(str) {
+  const s = String(str ?? '');
+  if (!s) return 'Unknown';
+  return s.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
 async function loadApps() {
   const res = await fetch(`/api/apps?user_id=${encodeURIComponent(selectedUserId || '')}`);
-  const apps = await res.json();
+  const body = await res.json();
 
-  const synced = Array.isArray(apps) ? apps.filter((a) => a.synced) : [];
+  const sources = Array.isArray(body.sources) ? body.sources : [];
   const grid = document.getElementById('apps-grid');
   const empty = document.getElementById('apps-empty');
 
   grid.innerHTML = '';
   empty.hidden = true;
 
-  if (synced.length === 0) {
+  if (sources.length === 0) {
     empty.hidden = false;
     return;
   }
 
   empty.hidden = true;
-  grid.innerHTML = synced
-    .map(
-      (a) => `
+  grid.innerHTML = sources
+    .map((s) => {
+      const connected = s.connected_at ? new Date(s.connected_at).toLocaleDateString() : 'Unknown';
+      const lastProcessed = s.last_processed_at ? new Date(s.last_processed_at).toLocaleDateString() : 'Never';
+      return `
       <div class="app-card">
-        <img src="${a.logo_url || ''}" alt="${escapeHtml(a.name)}" onerror="this.style.display='none'">
-        <span class="app-name">${escapeHtml(a.name)}</span>
-        <span class="app-sync">Last sync: ${
-          a.last_sync ? new Date(a.last_sync).toLocaleDateString() : 'Never'
-        }</span>
-      </div>`
-    )
+        <span class="app-name">${escapeHtml(formatSourceName(s.type))}</span>
+        <span class="app-sync">Connected: ${escapeHtml(connected)}</span>
+        <span class="app-sync">Last processed: ${escapeHtml(lastProcessed)}</span>
+      </div>`;
+    })
     .join('');
 }
 
@@ -260,6 +276,22 @@ function openStream(endpoint) {
   activeSource.addEventListener('data',       (e) => appendEvent('data', e.data));
   activeSource.addEventListener('connection', (e) => appendEvent('connection', e.data));
   activeSource.addEventListener('rule',       (e) => appendEvent('rule', e.data));
+  activeSource.addEventListener('stream_error', (e) => {
+    let message = e.data;
+    try {
+      const parsed = JSON.parse(e.data);
+      message = `${parsed.status ? `[${parsed.status}] ` : ''}${parsed.message || e.data}`;
+    } catch { /* not JSON, use raw text */ }
+
+    const feed = document.getElementById('event-feed');
+    const placeholder = feed.querySelector('.feed-empty');
+    if (placeholder) placeholder.remove();
+    feed.insertAdjacentHTML(
+      'beforeend',
+      `<div class="event-row"><span class="ev-error">[error]</span> ${escapeHtml(message)}</div>`
+    );
+    feed.scrollTop = feed.scrollHeight;
+  });
 
   document.getElementById('btn-connect').hidden    = true;
   document.getElementById('btn-replay').hidden     = true;

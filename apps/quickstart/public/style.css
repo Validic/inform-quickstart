@@ -8,6 +8,7 @@
   --text-muted:  #8B9CB8;
   --live:        #00FF88;
   --amber:       #FFB800;
+  --error:       #FF4D4F;
   --feed-bg:     #070A12;
   --font-ui:     'Inter', system-ui, sans-serif;
   --font-mono:   'JetBrains Mono', 'Consolas', monospace;
@@ -230,6 +231,7 @@ body {
 .ev-data       { color: var(--accent); }
 .ev-connection { color: var(--amber); }
 .ev-rule       { color: var(--text); }
+.ev-error      { color: var(--error); }
 .ev-source     { color: var(--text-muted); }
 .feed-empty    { color: var(--text-muted); }
 
