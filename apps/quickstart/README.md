@@ -18,7 +18,7 @@ Clone it, run it, then use it as the starting point for whatever you want to bui
 
 ```bash
 git clone https://github.com/validic/inform-quickstart.git
-cd inform-quickstart
+cd inform-quickstart/apps/quickstart
 npm install
 ```
 
@@ -51,7 +51,7 @@ The app walks through the four-step Inform integration pattern:
 
 | Section | What it demonstrates |
 |---------|---------------------|
-| **Connect Your Device** | `GET /users/:id/apps` — list connected sources; redirect to Marketplace |
+| **Connect Your Device** | `GET /users/:uid` — read connected sources from the user's `sources` array; redirect to Marketplace |
 | **Your Data** | `GET /users/:id/:type` — pull 30 days of normalized health data |
 | **Live Stream** | SSE via `/streams/:id/connect` — real-time data as it arrives |
 | **Replay last 30 days** | SSE via `/replay` — historical events through the same stream interface |

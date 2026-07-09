@@ -72,6 +72,18 @@ describe('ensureUser', () => {
       .reply(401, 'Unauthorized');
     await expect(ensureUser()).rejects.toThrow('Failed to list users: 401');
   });
+
+  test('throws a clear error when an existing user is missing a marketplace token', async () => {
+    nock('https://inform-api.test')
+      .get('/organizations/test-org/users?token=test-token')
+      .reply(200, {
+        users: [{ id: 'user-abc', uid: 'sample-user' }],
+      });
+
+    await expect(ensureUser()).rejects.toThrow(
+      'Unexpected user payload: missing marketplace token for user sample-user'
+    );
+  });
 });
 
 describe('ensureStream', () => {

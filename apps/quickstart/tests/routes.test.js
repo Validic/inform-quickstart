@@ -88,6 +88,17 @@ describe('GET /api/apps', () => {
     expect(res.status).toBe(404);
     expect(res.body.error).toMatch(/Inform API error: 404/);
   });
+
+  test('URL-encodes a user_id containing path-traversal characters before forwarding upstream', async () => {
+    const scope = nock('https://inform-api.test')
+      .get('/organizations/test-org/users/a%2Fb%20..%2Fc')
+      .query({ token: 'test-token' })
+      .reply(200, { id: 'x', uid: 'a/b ../c', sources: [] });
+
+    const res = await request(app).get('/api/apps').query({ user_id: 'a/b ../c' });
+    expect(res.status).toBe(200);
+    expect(scope.isDone()).toBe(true);
+  });
 });
 
 describe('GET /api/data/:type', () => {
@@ -111,6 +122,17 @@ describe('GET /api/data/:type', () => {
   test('returns 400 for unknown type', async () => {
     const res = await request(app).get('/api/data/heartrate');
     expect(res.status).toBe(400);
+  });
+
+  test('URL-encodes a user_id containing path-traversal characters before forwarding upstream', async () => {
+    const scope = nock('https://inform-api.test')
+      .get('/organizations/test-org/users/a%2Fb%20..%2Fc/summaries')
+      .query(true)
+      .reply(200, { data: [] });
+
+    const res = await request(app).get('/api/data/summaries').query({ user_id: 'a/b ../c' });
+    expect(res.status).toBe(200);
+    expect(scope.isDone()).toBe(true);
   });
 });
 

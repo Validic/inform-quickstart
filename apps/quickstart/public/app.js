@@ -102,15 +102,26 @@ function formatSourceName(str) {
 }
 
 async function loadApps() {
+  const requestedUser = selectedUserId;
   const res = await fetch(`/api/apps?user_id=${encodeURIComponent(selectedUserId || '')}`);
   const body = await res.json();
+  if (requestedUser !== selectedUserId) return;
 
-  const sources = Array.isArray(body.sources) ? body.sources : [];
   const grid = document.getElementById('apps-grid');
   const empty = document.getElementById('apps-empty');
 
+  if (!res.ok || body.error) {
+    grid.innerHTML = '';
+    empty.hidden = false;
+    empty.innerHTML = `Could not load apps: ${escapeHtml(body.error || `HTTP ${res.status}`)}`;
+    return;
+  }
+
+  const sources = Array.isArray(body.sources) ? body.sources : [];
+
   grid.innerHTML = '';
   empty.hidden = true;
+  empty.innerHTML = 'No sources connected yet — connect one above and come back.';
 
   if (sources.length === 0) {
     empty.hidden = false;
@@ -170,7 +181,7 @@ function renderTable(records) {
             (r) => `
           <tr>
             <td class="muted">${new Date(r.start_time).toLocaleDateString()}</td>
-            <td>${r.source?.type || '—'}</td>
+            <td>${escapeHtml(r.source?.type || '—')}</td>
             <td>${formatMetrics(r.metrics)}</td>
           </tr>`
           )
@@ -180,6 +191,7 @@ function renderTable(records) {
 }
 
 async function loadDataTab(type) {
+  const requestedUser = selectedUserId;
   const container = document.getElementById('data-container');
   container.innerHTML = '<p class="empty-state">Loading...</p>';
 
@@ -190,6 +202,13 @@ async function loadDataTab(type) {
 
   const res = await fetch(`/api/data/${type}?user_id=${encodeURIComponent(selectedUserId || '')}`);
   const body = await res.json();
+  if (requestedUser !== selectedUserId) return;
+
+  if (!res.ok || body.error) {
+    container.innerHTML = `<p class="empty-state">Could not load data: ${escapeHtml(body.error || `HTTP ${res.status}`)}</p>`;
+    return;
+  }
+
   const records = body.data || [];
   dataCache[type] = records;
   container.innerHTML = renderTable(records);
@@ -268,7 +287,7 @@ function appendEvent(eventType, data) {
   document.getElementById('event-counter').textContent = `${eventCount} events`;
 }
 
-function openStream(endpoint) {
+function openStream(endpoint, mode) {
   if (activeSource) activeSource.close();
 
   activeSource = new EventSource(endpoint);
@@ -291,7 +310,37 @@ function openStream(endpoint) {
       `<div class="event-row"><span class="ev-error">[error]</span> ${escapeHtml(message)}</div>`
     );
     feed.scrollTop = feed.scrollHeight;
+
+    // Server ended the response after a fatal error (e.g. bad token) — native
+    // EventSource would otherwise auto-reconnect and repeat the same error
+    // forever. Stop here instead.
+    closeStream();
   });
+
+  activeSource.onerror = () => {
+    // Replay streams are finite: the server ends the response once history
+    // has been sent, which EventSource treats as a drop and would otherwise
+    // auto-reconnect and re-replay the same window forever. Treat any
+    // error/close as end-of-replay and stop.
+    if (mode === 'replay') {
+      const hadEvents = eventCount > 0;
+      closeStream();
+      const feed = document.getElementById('event-feed');
+      if (hadEvents) {
+        feed.insertAdjacentHTML(
+          'beforeend',
+          '<div class="event-row"><span class="feed-empty">— replay ended —</span></div>'
+        );
+        feed.scrollTop = feed.scrollHeight;
+      } else {
+        // Don't leave a stale "Replaying..." placeholder behind
+        feed.innerHTML = '<span class="feed-empty">No events found in the replay window.</span>';
+      }
+    }
+    // mode === 'connect': do nothing — native auto-reconnect is desirable
+    // for a live stream that drops. Fatal auth errors are handled above via
+    // the stream_error event, which calls closeStream() itself.
+  };
 
   document.getElementById('btn-connect').hidden    = true;
   document.getElementById('btn-replay').hidden     = true;
@@ -306,14 +355,14 @@ function closeStream() {
 }
 
 document.getElementById('btn-connect').addEventListener('click', () => {
-  openStream('/api/stream/connect');
+  openStream('/api/stream/connect', 'connect');
 });
 
 document.getElementById('btn-replay').addEventListener('click', () => {
   eventCount = 0;
   document.getElementById('event-counter').textContent = '0 events';
   document.getElementById('event-feed').innerHTML = '<span class="feed-empty">Replaying...</span>';
-  openStream('/api/stream/replay');
+  openStream('/api/stream/replay', 'replay');
 });
 
 document.getElementById('btn-disconnect').addEventListener('click', closeStream);

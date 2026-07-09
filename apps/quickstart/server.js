@@ -88,6 +88,9 @@ async function ensureUser() {
   if (users.length > 0) {
     userData = users[0];
     console.log(`Using existing user: ${userData.id}`);
+    if (!userData.marketplace?.token) {
+      throw new Error(`Unexpected user payload: missing marketplace token for user ${userData.uid}`);
+    }
   } else {
     console.log('No existing users found, provisioning new user...');
     const res = await httpsPost(
@@ -220,7 +223,7 @@ app.get('/api/curl', (req, res) => {
   const userId = req.query.user_id || INFORM_USER_ID;
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const today = new Date().toISOString().split('T')[0];
-  const u = `${BASE_URL}/organizations/${ORG_ID}/users/${userId}`;
+  const u = `${BASE_URL}/organizations/${ORG_ID}/users/${encodeURIComponent(userId)}`;
   res.json({
     // /apps does not exist in the Inform API — connected sources live on the
     // user object's "sources" array, keyed by uid.
@@ -241,7 +244,7 @@ app.get('/api/apps', requireProvisioned, async (req, res) => {
   const userId = req.query.user_id || INFORM_USER_ID;
   try {
     const response = await httpsGet(
-      `${BASE_URL}/organizations/${ORG_ID}/users/${userId}?token=${ORG_TOKEN}`
+      `${BASE_URL}/organizations/${ORG_ID}/users/${encodeURIComponent(userId)}?token=${ORG_TOKEN}`
     );
     if (response.status < 200 || response.status >= 300) {
       return res.status(response.status).json({ error: `Inform API error: ${response.status}` });
@@ -273,7 +276,7 @@ app.get('/api/data/:type', requireProvisioned, async (req, res) => {
 
   try {
     const response = await httpsGet(
-      `${BASE_URL}/organizations/${ORG_ID}/users/${userId}/${type}` +
+      `${BASE_URL}/organizations/${ORG_ID}/users/${encodeURIComponent(userId)}/${type}` +
         `?start_date=${thirtyDaysAgo}&end_date=${today}&token=${ORG_TOKEN}`
     );
     if (response.status < 200 || response.status >= 300) {
