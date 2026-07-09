@@ -7,7 +7,7 @@ import { useConfig } from '@/context/ConfigContext';
 const EXAMPLE_CONFIG = `NEXT_PUBLIC_INFORM_TOKEN=your_token
 NEXT_PUBLIC_INFORM_ORG_ID=your_org_id
 NEXT_PUBLIC_INFORM_API_URL=<contact your Inform representative>
-NEXT_PUBLIC_INFORM_DATAGEN_URL=<contact your Inform representative>
+NEXT_PUBLIC_INFORM_DATAGEN_URL=<optional - contact your Inform representative>
 NEXT_PUBLIC_INFORM_STREAM_URL=<contact your Inform representative>
 
 Users
@@ -79,7 +79,7 @@ export default function ConfigUploadModal({ onClose }: ConfigUploadModalProps) {
       } else if (result.config) {
         setSuccess(true);
       } else {
-        setError('Invalid config file. Please ensure it contains all required variables:\n• NEXT_PUBLIC_INFORM_TOKEN\n• NEXT_PUBLIC_INFORM_ORG_ID\n• NEXT_PUBLIC_INFORM_API_URL\n• NEXT_PUBLIC_INFORM_DATAGEN_URL\n• NEXT_PUBLIC_INFORM_STREAM_URL');
+        setError('Invalid config file. Please ensure it contains all required variables:\n• NEXT_PUBLIC_INFORM_TOKEN\n• NEXT_PUBLIC_INFORM_ORG_ID\n• NEXT_PUBLIC_INFORM_API_URL\n\nNEXT_PUBLIC_INFORM_DATAGEN_URL and NEXT_PUBLIC_INFORM_STREAM_URL are optional; without DATAGEN_URL, the Generate Data panel is disabled.');
       }
     };
     reader.onerror = () => {

@@ -58,6 +58,8 @@ STREAM_URL=<contact your Inform representative>
 
 Both `ORG_ID` and `ORG_TOKEN` are available in your [Inform dashboard](https://dashboard.validic.com).
 
+`DATAGEN_URL` is optional — without it, the rest of the explorer app works normally, and only the Generate Data panel is disabled.
+
 **3. Run the app**
 
 ```bash

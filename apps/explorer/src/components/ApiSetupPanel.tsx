@@ -45,6 +45,7 @@ export default function ApiSetupPanel({
   const [availableSources, setAvailableSources] = useState<string[]>([]);
 
   const isGenerateData = selectedService === 'generate-data';
+  const isGenerateDataDisabled = isGenerateData && !config.dataGeneratorUrl;
   const isGetUserData = selectedService === 'get-user-data';
   const isGetUser = selectedService === 'get-user';
   const isGetUsers = selectedService === 'get-users';
@@ -80,6 +81,7 @@ export default function ApiSetupPanel({
       <ServiceSelector
         selectedService={selectedService}
         onSelect={onServiceChange}
+        dataGeneratorUrl={config.dataGeneratorUrl}
       />
 
       {/* Divider */}
@@ -143,8 +145,15 @@ export default function ApiSetupPanel({
         </div>
       )}
 
+      {/* Generate Data unavailable notice */}
+      {isGenerateDataDisabled && (
+        <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-xs text-yellow-300">
+          Requires a Data Generator URL — contact your Inform representative, then add DATAGEN_URL to your config.
+        </div>
+      )}
+
       {/* User ID - for get-user, get-user-data, generate-data */}
-      {(isGetUser || isGetUserData || isGenerateData) && (
+      {(isGetUser || isGetUserData || (isGenerateData && !isGenerateDataDisabled)) && (
         <div>
           <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
             <User className="w-4 h-4" />
@@ -182,7 +191,7 @@ export default function ApiSetupPanel({
       )}
 
       {/* Date Range - for get-user-data and generate-data */}
-      {(isGetUserData || isGenerateData) && (
+      {(isGetUserData || (isGenerateData && !isGenerateDataDisabled)) && (
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
@@ -232,7 +241,7 @@ export default function ApiSetupPanel({
       )}
 
       {/* Data Type Selection */}
-      {(isGenerateData || isGetUserData) && (
+      {((isGenerateData && !isGenerateDataDisabled) || isGetUserData) && (
         <div>
           <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
             <Database className="w-4 h-4" />
@@ -257,7 +266,7 @@ export default function ApiSetupPanel({
       )}
 
       {/* Source Selection - only for generate-data */}
-      {isGenerateData && (
+      {isGenerateData && !isGenerateDataDisabled && (
         <div>
           <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
             <Activity className="w-4 h-4" />
@@ -278,7 +287,7 @@ export default function ApiSetupPanel({
       )}
 
       {/* Device Type (for measurements) */}
-      {showDeviceType && isGenerateData && (
+      {showDeviceType && isGenerateData && !isGenerateDataDisabled && (
         <div>
           <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
             <Activity className="w-4 h-4" />
@@ -300,7 +309,7 @@ export default function ApiSetupPanel({
       )}
 
       {/* Include Segments (for nutrition) */}
-      {showSegments && isGenerateData && (
+      {showSegments && isGenerateData && !isGenerateDataDisabled && (
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
@@ -318,7 +327,7 @@ export default function ApiSetupPanel({
       {/* Execute Button */}
       <button
         onClick={onExecute}
-        disabled={isLoading}
+        disabled={isLoading || isGenerateDataDisabled}
         className="btn-primary w-full flex items-center justify-center gap-2 py-3"
       >
         {isLoading ? (
