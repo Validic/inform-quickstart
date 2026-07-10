@@ -1,14 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Users, Database, RefreshCw, Sparkles, Heart, Activity, Dices, Calendar, TrendingUp, Target, AlertCircle } from 'lucide-react';
+import { User, Users, Database, RefreshCw, Sparkles } from 'lucide-react';
 import { ServiceType } from '@/types';
-
-type AppMode = 'api-demo' | 'impact';
 
 interface HelpPanelProps {
   selectedService?: ServiceType;
-  appMode?: AppMode;
 }
 
 interface HelpTab {
@@ -19,7 +16,6 @@ interface HelpTab {
   category: string;
 }
 
-// API Demo mode tabs and categories
 const apiHelpTabs: HelpTab[] = [
   { id: 'get-user', name: 'Get User', icon: <User className="w-4 h-4" />, color: '#0066CC', category: 'users' },
   { id: 'get-users', name: 'Get Users', icon: <Users className="w-4 h-4" />, color: '#0088EE', category: 'users' },
@@ -33,37 +29,16 @@ const apiCategories = [
   { id: 'data', name: 'Data' },
 ];
 
-// Impact mode tabs and categories
-const impactHelpTabs: HelpTab[] = [
-  { id: 'impact-overview', name: 'Overview', icon: <Heart className="w-4 h-4" />, color: '#a855f7', category: 'getting-started' },
-  { id: 'impact-patients', name: 'Patient Selection', icon: <Users className="w-4 h-4" />, color: '#3b82f6', category: 'getting-started' },
-  { id: 'impact-timeline', name: 'Timeline View', icon: <Calendar className="w-4 h-4" />, color: '#22c55e', category: 'data-viewing' },
-  { id: 'impact-data-types', name: 'Data Types', icon: <Activity className="w-4 h-4" />, color: '#06b6d4', category: 'data-viewing' },
-  { id: 'impact-generate', name: 'Generate Data', icon: <Dices className="w-4 h-4" />, color: '#22c55e', category: 'data-generation' },
-  { id: 'impact-scenarios', name: 'Clinical Scenarios', icon: <Target className="w-4 h-4" />, color: '#f59e0b', category: 'data-generation' },
-  { id: 'impact-gaps', name: 'Gap Analysis', icon: <AlertCircle className="w-4 h-4" />, color: '#ef4444', category: 'analysis' },
-  { id: 'impact-trends', name: 'Trend Analysis', icon: <TrendingUp className="w-4 h-4" />, color: '#8b5cf6', category: 'analysis' },
-];
+export default function HelpPanel({ selectedService }: HelpPanelProps) {
+  const helpTabs = apiHelpTabs;
+  const categories = apiCategories;
 
-const impactCategories = [
-  { id: 'getting-started', name: 'Getting Started' },
-  { id: 'data-viewing', name: 'Data Viewing' },
-  { id: 'data-generation', name: 'Data Generation' },
-  { id: 'analysis', name: 'Analysis' },
-];
+  const [activeTab, setActiveTab] = useState<string>(selectedService || 'get-user');
 
-export default function HelpPanel({ selectedService, appMode = 'api-demo' }: HelpPanelProps) {
-  const isImpactMode = appMode === 'impact';
-  const helpTabs = isImpactMode ? impactHelpTabs : apiHelpTabs;
-  const categories = isImpactMode ? impactCategories : apiCategories;
-  const defaultTab = isImpactMode ? 'impact-overview' : (selectedService || 'get-user');
-
-  const [activeTab, setActiveTab] = useState<string>(defaultTab);
-
-  // Reset to default tab when mode changes
+  // Reset to default tab when selected service changes
   useEffect(() => {
-    setActiveTab(isImpactMode ? 'impact-overview' : (selectedService || 'get-user'));
-  }, [appMode, isImpactMode, selectedService]);
+    setActiveTab(selectedService || 'get-user');
+  }, [selectedService]);
 
   return (
     <div className="h-full flex">
@@ -101,15 +76,14 @@ export default function HelpPanel({ selectedService, appMode = 'api-demo' }: Hel
 
       {/* Right Column - Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        <HelpContent helpId={activeTab} appMode={appMode} />
+        <HelpContent helpId={activeTab} />
       </div>
     </div>
   );
 }
 
-function HelpContent({ helpId, appMode }: { helpId: string; appMode: AppMode }) {
-  const guides = appMode === 'impact' ? impactHelpGuides : helpGuides;
-  const content = guides[helpId];
+function HelpContent({ helpId }: { helpId: string }) {
+  const content = helpGuides[helpId];
 
   if (!content) {
     return (
@@ -279,10 +253,6 @@ const helpGuides: Record<string, HelpGuide> = {
         tip: 'Larger ranges return more data but take longer.',
       },
       {
-        title: 'Filter by Source (Optional)',
-        description: 'Select a specific source (Fitbit, Garmin, etc.) or "All Sources".',
-      },
-      {
         title: 'Filter by Data Type (Optional)',
         description: 'Choose Summaries, Workouts, Sleep, etc. or "All Data".',
         tip: 'Specific types are faster and more focused.',
@@ -354,215 +324,3 @@ const helpGuides: Record<string, HelpGuide> = {
   },
 };
 
-// Impact Data Manager help guides
-const impactHelpGuides: Record<string, HelpGuide> = {
-  'impact-overview': {
-    title: 'Inform Impact Data Manager',
-    description: 'A unified interface for managing patient health data, generating test data, and analyzing clinical outcomes for Impact programs.',
-    steps: [
-      {
-        title: 'Select a Patient',
-        description: 'Choose a patient from the left panel. Patients are grouped by demo user (e.g., Jordan, Sarah).',
-        tip: 'Patient data is loaded from the shared Google Sheets spreadsheet.',
-      },
-      {
-        title: 'Set Date Range',
-        description: 'Configure the time window for viewing and generating data using the date pickers.',
-      },
-      {
-        title: 'Fetch Patient Data',
-        description: 'Click "Fetch Data" to retrieve all health records for the selected patient within the date range.',
-      },
-      {
-        title: 'Generate or Analyze',
-        description: 'Use the Generate Random Data section to create test data, or review the timeline to analyze gaps and trends.',
-      },
-    ],
-    exampleNote: 'Impact Data Manager pulls patient lists from the same spreadsheet used by the myEHR demo application.',
-  },
-
-  'impact-patients': {
-    title: 'Patient Selection',
-    description: 'Browse and select patients from the demo spreadsheet. Patients are organized by demo user groups.',
-    prerequisites: [
-      'Google Sheets API accessible',
-      'Valid patient data in the spreadsheet',
-    ],
-    steps: [
-      {
-        title: 'View Patient Groups',
-        description: 'Patients are organized by tab name from the spreadsheet (e.g., "Jordan", "Sarah").',
-      },
-      {
-        title: 'Select a Patient',
-        description: 'Click on a patient card to select them. Their name, UID, and ID will be displayed.',
-      },
-      {
-        title: 'Refresh Patient List',
-        description: 'Click the refresh icon to reload patients from the spreadsheet.',
-        tip: 'Only tabs with "uid" and "id" columns are included.',
-      },
-    ],
-    exampleNote: 'The patient UID is used for all API calls. The ID is the internal database reference.',
-  },
-
-  'impact-timeline': {
-    title: 'Timeline View',
-    description: 'View patient health data day-by-day with visual indicators for data completeness.',
-    prerequisites: [
-      'Patient selected',
-      'Data fetched for the date range',
-    ],
-    steps: [
-      {
-        title: 'Fetch Data First',
-        description: 'Click "Fetch Data" to populate the timeline with actual health records.',
-      },
-      {
-        title: 'Review Each Day',
-        description: 'The timeline shows every day in the range, newest first. Each row shows data summaries.',
-      },
-      {
-        title: 'Identify Missing Days',
-        description: 'Days without any data are highlighted in red for easy identification.',
-        tip: 'Use this to find gaps that need synthetic data.',
-      },
-      {
-        title: 'View Summary Stats',
-        description: 'The footer shows total days, days with data, and missing day count.',
-      },
-    ],
-    exampleNote: 'Data summaries show steps, workout types, sleep duration, and other key metrics at a glance.',
-  },
-
-  'impact-data-types': {
-    title: 'Data Types',
-    description: 'Understanding the different health data categories available in Impact.',
-    steps: [
-      {
-        title: 'Daily Summaries',
-        description: 'Aggregated daily metrics including steps, calories, distance, and activity minutes.',
-      },
-      {
-        title: 'Workouts',
-        description: 'Individual exercise sessions with type, duration, and performance metrics.',
-      },
-      {
-        title: 'Sleep',
-        description: 'Sleep records with total duration, stages (deep, light, REM), and efficiency.',
-      },
-      {
-        title: 'Nutrition',
-        description: 'Food logs with calories, macronutrients, and meal timing.',
-      },
-      {
-        title: 'Measurements',
-        description: 'Biometric readings like blood pressure, weight, blood glucose, and SpO2.',
-      },
-      {
-        title: 'CGM Data',
-        description: 'Continuous glucose monitoring readings with timestamps.',
-      },
-    ],
-    exampleNote: 'Each data type maps to different device sources (Fitbit, Garmin, Apple Health, etc.).',
-  },
-
-  'impact-generate': {
-    title: 'Generate Random Data',
-    description: 'Create synthetic health data for testing Impact programs and filling data gaps.',
-    prerequisites: [
-      'Data Generator URL configured',
-      'Valid Auth Token',
-      'Patient selected',
-    ],
-    steps: [
-      {
-        title: 'Select Data Types',
-        description: 'Choose which types of data to generate: Blood Glucose, Blood Pressure, Steps, Body Weight, SpO2, or CGM.',
-        tip: 'You can select multiple types to generate in one batch.',
-      },
-      {
-        title: 'Set Date Range',
-        description: 'Configure the start and end dates for data generation.',
-      },
-      {
-        title: 'Enable Gap Filling',
-        description: 'Check "Skip days with existing data" to only generate on days without records.',
-        tip: 'Fetch data first to enable this option.',
-      },
-      {
-        title: 'Generate Data',
-        description: 'Click "Generate Data" to create synthetic records. Progress is shown during generation.',
-      },
-    ],
-    exampleNote: 'The system automatically groups consecutive dates into efficient API calls.',
-  },
-
-  'impact-scenarios': {
-    title: 'Clinical Scenarios',
-    description: 'Generate realistic health data patterns that simulate clinical outcomes over time.',
-    steps: [
-      {
-        title: 'Coming Soon',
-        description: 'Clinical scenarios will allow you to generate data that follows realistic health patterns.',
-      },
-      {
-        title: 'Weight Loss Journey',
-        description: 'Generate weight measurements trending downward over the selected period.',
-      },
-      {
-        title: 'BP Management',
-        description: 'Generate blood pressure readings showing gradual improvement.',
-      },
-      {
-        title: 'Activity Increase',
-        description: 'Generate step counts and workouts with increasing frequency and intensity.',
-      },
-    ],
-    exampleNote: 'Scenarios are designed to test Impact program logic with realistic patient progressions.',
-  },
-
-  'impact-gaps': {
-    title: 'Gap Analysis',
-    description: 'Identify and fill missing data in patient health records.',
-    prerequisites: [
-      'Patient data fetched',
-    ],
-    steps: [
-      {
-        title: 'Review Timeline',
-        description: 'Red-highlighted days in the timeline indicate missing data.',
-      },
-      {
-        title: 'Check Footer Stats',
-        description: 'The timeline footer shows how many days are missing data.',
-      },
-      {
-        title: 'Generate Missing Data',
-        description: 'Use "Skip days with existing data" option to fill only the gaps.',
-        tip: 'This ensures you don\'t overwrite existing patient data.',
-      },
-    ],
-    exampleNote: 'Gap analysis helps ensure patients have complete data for program calculations.',
-  },
-
-  'impact-trends': {
-    title: 'Trend Analysis',
-    description: 'Analyze health data trends and patterns over time.',
-    steps: [
-      {
-        title: 'Coming Soon',
-        description: 'Trend analysis features will provide visualizations and insights.',
-      },
-      {
-        title: 'View Timeline Patterns',
-        description: 'Currently, you can review the timeline to see data patterns day by day.',
-      },
-      {
-        title: 'Export for Analysis',
-        description: 'Use the All Users panel to export data for external analysis tools.',
-      },
-    ],
-    exampleNote: 'Future versions will include charts and automated trend detection.',
-  },
-};

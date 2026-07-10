@@ -38,8 +38,6 @@ interface AccordionServicePanelProps {
   isLoading: boolean;
   config: ConfigValues;
   users: DemoUser[];
-  onFetchAllUsers?: () => void;
-  isFetchingAllUsers?: boolean;
   onRequestBodyChange?: (body: string) => void;
   requestBody?: string;
 }
@@ -60,6 +58,9 @@ function getServiceColor(serviceId: ServiceType): string {
   return service?.color || '#6b7280';
 }
 
+const GENERATE_DATA_DISABLED_MESSAGE =
+  'Requires a Data Generator URL — contact your Inform representative, then add DATAGEN_URL to your config.';
+
 export default function AccordionServicePanel({
   setup,
   onChange,
@@ -69,8 +70,6 @@ export default function AccordionServicePanel({
   isLoading,
   config,
   users,
-  onFetchAllUsers,
-  isFetchingAllUsers,
 }: AccordionServicePanelProps) {
   const [expandedService, setExpandedService] = useState<ServiceType | null>(selectedService);
   const [availableSources, setAvailableSources] = useState<string[]>([]);
@@ -96,7 +95,12 @@ export default function AccordionServicePanel({
     onChange({ ...setup, [field]: value });
   };
 
+  const isGenerateDataDisabled = !config.dataGeneratorUrl;
+
   const handleServiceClick = (serviceId: ServiceType) => {
+    if (serviceId === 'generate-data' && isGenerateDataDisabled) {
+      return;
+    }
     if (expandedService === serviceId) {
       setExpandedService(null);
     } else {
@@ -268,26 +272,6 @@ export default function AccordionServicePanel({
         </div>
       </div>
 
-      {onFetchAllUsers && (
-        <button
-          onClick={onFetchAllUsers}
-          disabled={isFetchingAllUsers || isLoading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-50"
-        >
-          {isFetchingAllUsers ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Fetching...
-            </>
-          ) : (
-            <>
-              <Users className="w-4 h-4" />
-              Fetch All Users
-            </>
-          )}
-        </button>
-      )}
-
       {renderExecuteButton()}
       {renderRequestPreview('get-users')}
     </div>
@@ -439,12 +423,15 @@ export default function AccordionServicePanel({
     const isExpanded = expandedService === serviceId;
     const Icon = serviceIcons[serviceId] || Database;
     const color = getServiceColor(serviceId);
+    const isDisabled = serviceId === 'generate-data' && isGenerateDataDisabled;
 
     return (
       <div
         key={serviceId}
         className={`border rounded-lg overflow-hidden transition-all duration-200 ${
-          isExpanded
+          isDisabled
+            ? 'border-gray-800/50 bg-gray-800/10 opacity-60'
+            : isExpanded
             ? 'border-blue-500/50 bg-gray-800/30'
             : 'border-gray-700/50 bg-gray-800/20 hover:border-gray-600/50'
         }`}
@@ -452,7 +439,9 @@ export default function AccordionServicePanel({
         {/* Header */}
         <button
           onClick={() => handleServiceClick(serviceId)}
-          className="w-full flex items-center gap-3 p-3 text-left"
+          disabled={isDisabled}
+          title={isDisabled ? GENERATE_DATA_DISABLED_MESSAGE : undefined}
+          className={`w-full flex items-center gap-3 p-3 text-left ${isDisabled ? 'cursor-not-allowed' : ''}`}
         >
           <div
             className="p-2 rounded-lg flex-shrink-0"
@@ -463,14 +452,16 @@ export default function AccordionServicePanel({
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-medium text-white">{service.name}</h3>
             {!isExpanded && (
-              <p className="text-xs text-gray-500 truncate">{service.description}</p>
+              <p className="text-xs text-gray-500 truncate">
+                {isDisabled ? GENERATE_DATA_DISABLED_MESSAGE : service.description}
+              </p>
             )}
           </div>
-          {isExpanded ? (
+          {!isDisabled && (isExpanded ? (
             <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
           ) : (
             <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
-          )}
+          ))}
         </button>
 
         {/* Expanded content */}

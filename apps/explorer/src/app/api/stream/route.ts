@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { isValidHttpUrl } from '@/lib/validateUrl';
 
 // Disable static optimization and set long timeout for streaming
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,13 @@ export async function GET(request: NextRequest) {
 
   if (!streamsUrl) {
     return new Response(JSON.stringify({ error: 'Missing streamsUrl parameter' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!isValidHttpUrl(streamsUrl)) {
+    return new Response(JSON.stringify({ error: 'Invalid url parameter' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });

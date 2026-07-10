@@ -49,6 +49,8 @@ DATAGEN_URL=<contact your Inform representative>
 STREAM_URL=<contact your Inform representative>
 ```
 
+`DATAGEN_URL` is optional — without it, everything works except the Generate Data panel, which is disabled until it's set.
+
 **4. Start the app**
 
 ```bash

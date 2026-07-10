@@ -72,6 +72,18 @@ describe('ensureUser', () => {
       .reply(401, 'Unauthorized');
     await expect(ensureUser()).rejects.toThrow('Failed to list users: 401');
   });
+
+  test('throws a clear error when an existing user is missing a marketplace token', async () => {
+    nock('https://inform-api.test')
+      .get('/organizations/test-org/users?token=test-token')
+      .reply(200, {
+        users: [{ id: 'user-abc', uid: 'sample-user' }],
+      });
+
+    await expect(ensureUser()).rejects.toThrow(
+      'Unexpected user payload: missing marketplace token for user sample-user'
+    );
+  });
 });
 
 describe('ensureStream', () => {
@@ -105,11 +117,35 @@ describe('ensureStream', () => {
     expect(process.env.INFORM_STREAM_ID).toBe('stream-123');
   });
 
-  test('throws on Inform API error', async () => {
+  test('warns and continues without stream on list failure', async () => {
     nock('https://inform-streams.test')
       .get('/streams?token=test-token')
       .reply(500, 'internal error');
-    await expect(ensureStream()).rejects.toThrow('Failed to list streams: 500');
+
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    await expect(ensureStream()).resolves.toBeUndefined();
+    expect(process.env.INFORM_STREAM_ID).toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('500'));
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('internal error'));
+    warnSpy.mockRestore();
+  });
+
+  test('warns, hints at cleanup, and continues without stream on quota-exceeded 422', async () => {
+    nock('https://inform-streams.test')
+      .get('/streams?token=test-token')
+      .reply(200, { streams: [] });
+
+    nock('https://inform-streams.test')
+      .post('/streams?token=test-token')
+      .reply(422, JSON.stringify({ errors: { streams: ['maximum number of streams exceeded'] } }));
+
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    await expect(ensureStream()).resolves.toBeUndefined();
+    expect(process.env.INFORM_STREAM_ID).toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('422'));
+    expect(warnSpy.mock.calls.some(([msg]) => /quota/i.test(msg))).toBe(true);
+    expect(warnSpy.mock.calls.some(([msg]) => /DELETE/.test(msg))).toBe(true);
+    warnSpy.mockRestore();
   });
 });
 

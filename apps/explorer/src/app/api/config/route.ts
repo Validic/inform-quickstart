@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   const { ORG_ID, ORG_TOKEN, API_URL, DATAGEN_URL, STREAM_URL } = process.env;
 
-  if (!ORG_ID || !ORG_TOKEN || !API_URL || !DATAGEN_URL) {
+  if (!ORG_ID || !ORG_TOKEN || !API_URL) {
     return NextResponse.json({ error: 'Missing required environment variables' }, { status: 404 });
   }
 
@@ -12,7 +12,7 @@ export async function GET() {
       token: ORG_TOKEN,
       orgId: ORG_ID,
       apiUrl: API_URL,
-      datagenUrl: DATAGEN_URL,
+      datagenUrl: DATAGEN_URL || '',
       streamsUrl: STREAM_URL || '',
     },
     userIds: [],

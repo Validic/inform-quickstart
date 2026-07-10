@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import {
   User,
-  Users,
   Calendar,
   Database,
   Activity,
@@ -26,8 +25,6 @@ interface ApiSetupPanelProps {
   config: ConfigValues;
   onRequestBodyChange?: (body: string) => void;
   requestBody?: string;
-  onFetchAllUsers?: () => void;
-  isFetchingAllUsers?: boolean;
 }
 
 export default function ApiSetupPanel({
@@ -38,13 +35,12 @@ export default function ApiSetupPanel({
   onExecute,
   isLoading,
   config,
-  onFetchAllUsers,
-  isFetchingAllUsers,
 }: ApiSetupPanelProps) {
   const { users } = useConfig();
   const [availableSources, setAvailableSources] = useState<string[]>([]);
 
   const isGenerateData = selectedService === 'generate-data';
+  const isGenerateDataDisabled = isGenerateData && !config.dataGeneratorUrl;
   const isGetUserData = selectedService === 'get-user-data';
   const isGetUser = selectedService === 'get-user';
   const isGetUsers = selectedService === 'get-users';
@@ -80,6 +76,7 @@ export default function ApiSetupPanel({
       <ServiceSelector
         selectedService={selectedService}
         onSelect={onServiceChange}
+        dataGeneratorUrl={config.dataGeneratorUrl}
       />
 
       {/* Divider */}
@@ -119,32 +116,18 @@ export default function ApiSetupPanel({
           <p className="text-xs text-gray-500 mt-1">
             Sort users by creation date
           </p>
+        </div>
+      )}
 
-          {/* Fetch All Users Button */}
-          {onFetchAllUsers && (
-            <button
-              onClick={onFetchAllUsers}
-              disabled={isFetchingAllUsers || isLoading}
-              className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isFetchingAllUsers ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Fetching All Users...
-                </>
-              ) : (
-                <>
-                  <Users className="w-4 h-4" />
-                  Fetch All Users
-                </>
-              )}
-            </button>
-          )}
+      {/* Generate Data unavailable notice */}
+      {isGenerateDataDisabled && (
+        <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-xs text-yellow-300">
+          Requires a Data Generator URL — contact your Inform representative, then add DATAGEN_URL to your config.
         </div>
       )}
 
       {/* User ID - for get-user, get-user-data, generate-data */}
-      {(isGetUser || isGetUserData || isGenerateData) && (
+      {(isGetUser || isGetUserData || (isGenerateData && !isGenerateDataDisabled)) && (
         <div>
           <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
             <User className="w-4 h-4" />
@@ -182,7 +165,7 @@ export default function ApiSetupPanel({
       )}
 
       {/* Date Range - for get-user-data and generate-data */}
-      {(isGetUserData || isGenerateData) && (
+      {(isGetUserData || (isGenerateData && !isGenerateDataDisabled)) && (
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
@@ -232,7 +215,7 @@ export default function ApiSetupPanel({
       )}
 
       {/* Data Type Selection */}
-      {(isGenerateData || isGetUserData) && (
+      {((isGenerateData && !isGenerateDataDisabled) || isGetUserData) && (
         <div>
           <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
             <Database className="w-4 h-4" />
@@ -257,7 +240,7 @@ export default function ApiSetupPanel({
       )}
 
       {/* Source Selection - only for generate-data */}
-      {isGenerateData && (
+      {isGenerateData && !isGenerateDataDisabled && (
         <div>
           <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
             <Activity className="w-4 h-4" />
@@ -278,7 +261,7 @@ export default function ApiSetupPanel({
       )}
 
       {/* Device Type (for measurements) */}
-      {showDeviceType && isGenerateData && (
+      {showDeviceType && isGenerateData && !isGenerateDataDisabled && (
         <div>
           <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
             <Activity className="w-4 h-4" />
@@ -300,7 +283,7 @@ export default function ApiSetupPanel({
       )}
 
       {/* Include Segments (for nutrition) */}
-      {showSegments && isGenerateData && (
+      {showSegments && isGenerateData && !isGenerateDataDisabled && (
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
@@ -318,7 +301,7 @@ export default function ApiSetupPanel({
       {/* Execute Button */}
       <button
         onClick={onExecute}
-        disabled={isLoading}
+        disabled={isLoading || isGenerateDataDisabled}
         className="btn-primary w-full flex items-center justify-center gap-2 py-3"
       >
         {isLoading ? (

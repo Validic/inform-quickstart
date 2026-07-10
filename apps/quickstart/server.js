@@ -11,8 +11,8 @@ const BASE_URL = process.env.INFORM_API_URL;
 const STREAM_URL = process.env.INFORM_STREAM_URL;
 
 // Inform API endpoints used by this app:
-//   POST   BASE_URL/organizations/:org_id/users          — provision user
-//   GET    BASE_URL/organizations/:org_id/users/:id/apps — connected sources
+//   POST   BASE_URL/organizations/:org_id/users           — provision user
+//   GET    BASE_URL/organizations/:org_id/users/:uid      — connected sources (sources[])
 //   GET    BASE_URL/organizations/:org_id/users/:id/:type — health data
 //   POST   STREAM_URL/streams                            — create stream
 //   GET    STREAM_URL/streams/:id/connect                — live SSE stream
@@ -88,6 +88,9 @@ async function ensureUser() {
   if (users.length > 0) {
     userData = users[0];
     console.log(`Using existing user: ${userData.id}`);
+    if (!userData.marketplace?.token) {
+      throw new Error(`Unexpected user payload: missing marketplace token for user ${userData.uid}`);
+    }
   } else {
     console.log('No existing users found, provisioning new user...');
     const res = await httpsPost(
@@ -111,52 +114,73 @@ async function ensureUser() {
   process.env.INFORM_MARKETPLACE_URL = userData.marketplace.url;
 }
 
+// Stream setup runs on a small sandbox quota and can legitimately fail
+// (e.g. 422 "maximum number of streams exceeded"). That must NOT crash the
+// app — live streaming just becomes unavailable (see /api/stream/connect).
+function warnStreamSetupFailure(action, status, body) {
+  console.warn(`Stream setup: failed to ${action} streams: ${status} ${body}`);
+  if (/maximum|exceeded/i.test(body || '')) {
+    console.warn(
+      'Stream setup: this looks like your org has hit its stream quota. ' +
+        'To clean up existing streams:\n' +
+        `  curl "${STREAM_URL}/streams?token=<ORG_TOKEN>"    (list)\n` +
+        `  curl -X DELETE "${STREAM_URL}/streams/<STREAM_ID>?token=<ORG_TOKEN>"   (delete one)`
+    );
+  }
+}
+
 async function ensureStream() {
   const orgToken = process.env.ORG_TOKEN;
 
-  if (!orgToken) {
-    throw new Error('ORG_TOKEN must be set in .env before starting');
-  }
-
-  console.log('Checking for existing Inform streams...');
-  const listRes = await httpsGet(`${STREAM_URL}/streams?token=${orgToken}`);
-
-  if (listRes.status < 200 || listRes.status >= 300) {
-    throw new Error(`Failed to list streams: ${listRes.status} ${listRes.text}`);
-  }
-
-  const listParsed = JSON.parse(listRes.text);
-  const streams = Array.isArray(listParsed) ? listParsed : (listParsed.streams || listParsed.data || []);
-  const existing = streams.find((s) => s.name === 'sample-app-stream');
-
-  if (existing) {
-    process.env.INFORM_STREAM_ID = existing.id;
-    console.log(`Using existing stream: ${existing.id}`);
-    return;
-  }
-
-  console.log('No existing stream found, creating...');
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .split('T')[0];
-
-  const res = await httpsPost(
-    `${STREAM_URL}/streams?token=${orgToken}`,
-    {
-      name: 'sample-app-stream',
-      start_date: thirtyDaysAgo,
-      resource_filter: ['measurement', 'summary', 'workout', 'sleep'],
-      event_type_filter: ['data', 'connection'],
+  try {
+    if (!orgToken) {
+      throw new Error('ORG_TOKEN must be set in .env before starting');
     }
-  );
 
-  if (res.status < 200 || res.status >= 300) {
-    throw new Error(`Failed to create stream: ${res.status} ${res.text}`);
+    console.log('Checking for existing Inform streams...');
+    const listRes = await httpsGet(`${STREAM_URL}/streams?token=${orgToken}`);
+
+    if (listRes.status < 200 || listRes.status >= 300) {
+      warnStreamSetupFailure('list', listRes.status, listRes.text);
+      return;
+    }
+
+    const listParsed = JSON.parse(listRes.text);
+    const streams = Array.isArray(listParsed) ? listParsed : (listParsed.streams || listParsed.data || []);
+    const existing = streams.find((s) => s.name === 'sample-app-stream');
+
+    if (existing) {
+      process.env.INFORM_STREAM_ID = existing.id;
+      console.log(`Using existing stream: ${existing.id}`);
+      return;
+    }
+
+    console.log('No existing stream found, creating...');
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0];
+
+    const res = await httpsPost(
+      `${STREAM_URL}/streams?token=${orgToken}`,
+      {
+        name: 'sample-app-stream',
+        start_date: thirtyDaysAgo,
+        resource_filter: ['measurement', 'summary', 'workout', 'sleep'],
+        event_type_filter: ['data', 'connection'],
+      }
+    );
+
+    if (res.status < 200 || res.status >= 300) {
+      warnStreamSetupFailure('create', res.status, res.text);
+      return;
+    }
+
+    const stream = JSON.parse(res.text);
+    process.env.INFORM_STREAM_ID = stream.id;
+    console.log(`Stream created: ${stream.id}`);
+  } catch (err) {
+    console.warn(`Stream setup: unexpected error, continuing without live streaming: ${err.message}`);
   }
-
-  const stream = JSON.parse(res.text);
-  process.env.INFORM_STREAM_ID = stream.id;
-  console.log(`Stream created: ${stream.id}`);
 }
 
 // ---------- routes ----------
@@ -187,7 +211,6 @@ app.get('/api/users', async (req, res) => {
       return res.status(response.status).json({ error: `Inform API error: ${response.status}` });
     }
     const parsed = JSON.parse(response.text);
-    console.log('GET /api/users raw keys:', Object.keys(parsed));
     const users = Array.isArray(parsed) ? parsed : (parsed.users || parsed.data || []);
     res.json({ users });
   } catch (err) {
@@ -200,9 +223,11 @@ app.get('/api/curl', (req, res) => {
   const userId = req.query.user_id || INFORM_USER_ID;
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const today = new Date().toISOString().split('T')[0];
-  const u = `${BASE_URL}/organizations/${ORG_ID}/users/${userId}`;
+  const u = `${BASE_URL}/organizations/${ORG_ID}/users/${encodeURIComponent(userId)}`;
   res.json({
-    apps:           `curl "${u}/apps?token=${ORG_TOKEN}"`,
+    // /apps does not exist in the Inform API — connected sources live on the
+    // user object's "sources" array, keyed by uid.
+    apps:           `curl "${u}?token=${ORG_TOKEN}"`,
     summaries:      `curl "${u}/summaries?start_date=${thirtyDaysAgo}&end_date=${today}&token=${ORG_TOKEN}"`,
     workouts:       `curl "${u}/workouts?start_date=${thirtyDaysAgo}&end_date=${today}&token=${ORG_TOKEN}"`,
     sleep:          `curl "${u}/sleep?start_date=${thirtyDaysAgo}&end_date=${today}&token=${ORG_TOKEN}"`,
@@ -213,16 +238,19 @@ app.get('/api/curl', (req, res) => {
 });
 
 app.get('/api/apps', requireProvisioned, async (req, res) => {
+  // The Inform API has no /apps endpoint — connected sources live on the
+  // single-user GET, keyed by the user's uid (not the Mongo-style id).
   const { ORG_ID, ORG_TOKEN, INFORM_USER_ID } = process.env;
   const userId = req.query.user_id || INFORM_USER_ID;
   try {
     const response = await httpsGet(
-      `${BASE_URL}/organizations/${ORG_ID}/users/${userId}/apps?token=${ORG_TOKEN}`
+      `${BASE_URL}/organizations/${ORG_ID}/users/${encodeURIComponent(userId)}?token=${ORG_TOKEN}`
     );
     if (response.status < 200 || response.status >= 300) {
       return res.status(response.status).json({ error: `Inform API error: ${response.status}` });
     }
-    res.json(JSON.parse(response.text));
+    const parsed = JSON.parse(response.text);
+    res.json({ sources: parsed.sources || [] });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -248,7 +276,7 @@ app.get('/api/data/:type', requireProvisioned, async (req, res) => {
 
   try {
     const response = await httpsGet(
-      `${BASE_URL}/organizations/${ORG_ID}/users/${userId}/${type}` +
+      `${BASE_URL}/organizations/${ORG_ID}/users/${encodeURIComponent(userId)}/${type}` +
         `?start_date=${thirtyDaysAgo}&end_date=${today}&token=${ORG_TOKEN}`
     );
     if (response.status < 200 || response.status >= 300) {
@@ -267,6 +295,23 @@ function sseProxy(upstreamUrl, req, res) {
   res.flushHeaders();
 
   const upstream = https.get(upstreamUrl, (upstreamRes) => {
+    // Upstream errors (e.g. bad token → 401) come back as a plain JSON body,
+    // not an SSE stream, and never contain "\n\n" — surface them explicitly
+    // instead of silently dropping them.
+    if (upstreamRes.statusCode < 200 || upstreamRes.statusCode >= 300) {
+      let raw = '';
+      upstreamRes.on('data', (chunk) => { raw += chunk; });
+      upstreamRes.on('end', () => {
+        if (!res.writableEnded) {
+          res.write(
+            `event: stream_error\ndata: ${JSON.stringify({ status: upstreamRes.statusCode, message: raw })}\n\n`
+          );
+          res.end();
+        }
+      });
+      return;
+    }
+
     let buffer = '';
     upstreamRes.on('data', (chunk) => {
       buffer += chunk.toString();
@@ -299,6 +344,11 @@ function sseProxy(upstreamUrl, req, res) {
 
 app.get('/api/stream/connect', requireProvisioned, (req, res) => {
   const { ORG_TOKEN, INFORM_STREAM_ID } = process.env;
+  if (!INFORM_STREAM_ID) {
+    return res.status(503).json({
+      error: 'Live streaming unavailable: no stream could be created (org stream quota may be full). See server logs.',
+    });
+  }
   sseProxy(
     `${STREAM_URL}/streams/${INFORM_STREAM_ID}/connect?token=${ORG_TOKEN}`,
     req,

@@ -11,6 +11,17 @@ export async function executeApiRequest(
   let actualRequest: ActualRequest | undefined;
 
   try {
+    // Guard: generate-data requires a Data Generator URL. It's an optional part of the
+    // config, so refuse the request here rather than firing it against an empty base URL.
+    if (serviceType === 'generate-data' && !config.dataGeneratorUrl) {
+      return {
+        success: false,
+        error: 'Generate Data requires a Data Generator URL. Contact your Inform representative, then add DATAGEN_URL to your config.',
+        timestamp: new Date().toISOString(),
+        requestDuration: Date.now() - startTime,
+      };
+    }
+
     // Special case: fetch all data types in parallel when no specific type requested
     // Skip if fetchGeneric is true - caller wants a single generic request instead
     if (serviceType === 'get-user-data' && !setup.dataType && !setup.fetchGeneric) {
@@ -79,11 +90,13 @@ export async function executeApiRequest(
     if (serviceType === 'get-users') {
       const limit = setup.usersLimit || 50;
       const page = setup.usersPage || 0;
-      // Check if API returned summary with total
-      const total = responseData.summary?.total_count;
+      // Check if API returned a total record count (meta.total is current API shape;
+      // summary.total_count kept as a fallback for older response shapes)
+      const total = responseData.meta?.total ?? responseData.summary?.total_count;
       // Determine if there are more results
-      // hasMore is true if we got a full page of results (likely more pages exist)
-      const hasMore = data.length === limit;
+      // When total is known, compare against it directly; otherwise fall back to
+      // assuming a full page means more pages exist
+      const hasMore = total != null ? (page + 1) * limit < total : data.length === limit;
 
       pagination = {
         page,

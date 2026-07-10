@@ -86,11 +86,11 @@ function parseConfigFile(content: string): ParseResult {
   const token = values['ORG_TOKEN'] || values['NEXT_PUBLIC_INFORM_TOKEN'] || values['NEXT_PUBLIC_VALIDIC_TOKEN'];
   const orgId = values['ORG_ID'] || values['NEXT_PUBLIC_INFORM_ORG_ID'] || values['NEXT_PUBLIC_VALIDIC_ORG_ID'];
   const apiUrl = values['API_URL'] || values['NEXT_PUBLIC_INFORM_API_URL'] || values['NEXT_PUBLIC_VALIDIC_API_URL'];
-  const datagenUrl = values['DATAGEN_URL'] || values['NEXT_PUBLIC_INFORM_DATAGEN_URL'] || values['NEXT_PUBLIC_VALIDIC_DATAGEN_URL'];
+  const datagenUrl = values['DATAGEN_URL'] || values['NEXT_PUBLIC_INFORM_DATAGEN_URL'] || values['NEXT_PUBLIC_VALIDIC_DATAGEN_URL'] || '';
   // NEXT_PUBLIC_VALIDIC_AI_URL was the original name for this field before being renamed to STREAM_URL
   const streamsUrl = values['STREAM_URL'] || values['NEXT_PUBLIC_INFORM_STREAM_URL'] || values['NEXT_PUBLIC_VALIDIC_STREAM_URL'] || values['NEXT_PUBLIC_VALIDIC_AI_URL'] || '';
 
-  if (token && orgId && apiUrl && datagenUrl) {
+  if (token && orgId && apiUrl) {
     return { config: { token, orgId, apiUrl, datagenUrl, streamsUrl }, userIds };
   }
 
@@ -142,7 +142,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       if (savedConfig) {
         try {
           const parsed = JSON.parse(savedConfig);
-          if (parsed.token && parsed.orgId && parsed.apiUrl && parsed.datagenUrl) {
+          if (parsed.token && parsed.orgId && parsed.apiUrl) {
             setUploadedConfig(parsed);
           }
         } catch {

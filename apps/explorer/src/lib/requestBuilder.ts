@@ -52,6 +52,7 @@ export function buildRequest(
       const limit = setup.usersLimit || 50;
       const page = setup.usersPage || 0;
       params.push(`limit=${limit}`);
+      // Per the Inform API docs, `offset` is a 0-indexed page index (not a record offset).
       if (page > 0) params.push(`offset=${page}`);
       const sortOrder = setup.usersSortOrder || 'desc';
       params.push(`sort[]=${sortOrder === 'desc' ? '-created_at' : 'created_at'}`);

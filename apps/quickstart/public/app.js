@@ -72,6 +72,15 @@ async function loadUsers() {
   const link = document.getElementById('marketplace-link');
   if (status.marketplace_url) link.href = status.marketplace_url;
 
+  const btnConnect = document.getElementById('btn-connect');
+  if (!status.stream_id) {
+    btnConnect.disabled = true;
+    btnConnect.title = 'Live streaming unavailable: no stream could be created (org stream quota may be full). See server logs.';
+  } else {
+    btnConnect.disabled = false;
+    btnConnect.removeAttribute('title');
+  }
+
   select.addEventListener('change', () => {
     selectedUserId = select.value;
     dataCache = {};
@@ -85,34 +94,52 @@ async function loadUsers() {
 // CONNECTED APPS (Step 2)
 // ============================================================
 
-async function loadApps() {
-  const res = await fetch(`/api/apps?user_id=${encodeURIComponent(selectedUserId || '')}`);
-  const apps = await res.json();
+// Source types are snake_case identifiers (e.g. "yoo_fitness") — display as "Yoo Fitness"
+function formatSourceName(str) {
+  const s = String(str ?? '');
+  if (!s) return 'Unknown';
+  return s.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
 
-  const synced = Array.isArray(apps) ? apps.filter((a) => a.synced) : [];
+async function loadApps() {
+  const requestedUser = selectedUserId;
+  const res = await fetch(`/api/apps?user_id=${encodeURIComponent(selectedUserId || '')}`);
+  const body = await res.json();
+  if (requestedUser !== selectedUserId) return;
+
   const grid = document.getElementById('apps-grid');
   const empty = document.getElementById('apps-empty');
 
+  if (!res.ok || body.error) {
+    grid.innerHTML = '';
+    empty.hidden = false;
+    empty.innerHTML = `Could not load apps: ${escapeHtml(body.error || `HTTP ${res.status}`)}`;
+    return;
+  }
+
+  const sources = Array.isArray(body.sources) ? body.sources : [];
+
   grid.innerHTML = '';
   empty.hidden = true;
+  empty.innerHTML = 'No sources connected yet — connect one above and come back.';
 
-  if (synced.length === 0) {
+  if (sources.length === 0) {
     empty.hidden = false;
     return;
   }
 
   empty.hidden = true;
-  grid.innerHTML = synced
-    .map(
-      (a) => `
+  grid.innerHTML = sources
+    .map((s) => {
+      const connected = s.connected_at ? new Date(s.connected_at).toLocaleDateString() : 'Unknown';
+      const lastProcessed = s.last_processed_at ? new Date(s.last_processed_at).toLocaleDateString() : 'Never';
+      return `
       <div class="app-card">
-        <img src="${a.logo_url || ''}" alt="${escapeHtml(a.name)}" onerror="this.style.display='none'">
-        <span class="app-name">${escapeHtml(a.name)}</span>
-        <span class="app-sync">Last sync: ${
-          a.last_sync ? new Date(a.last_sync).toLocaleDateString() : 'Never'
-        }</span>
-      </div>`
-    )
+        <span class="app-name">${escapeHtml(formatSourceName(s.type))}</span>
+        <span class="app-sync">Connected: ${escapeHtml(connected)}</span>
+        <span class="app-sync">Last processed: ${escapeHtml(lastProcessed)}</span>
+      </div>`;
+    })
     .join('');
 }
 
@@ -154,7 +181,7 @@ function renderTable(records) {
             (r) => `
           <tr>
             <td class="muted">${new Date(r.start_time).toLocaleDateString()}</td>
-            <td>${r.source?.type || '—'}</td>
+            <td>${escapeHtml(r.source?.type || '—')}</td>
             <td>${formatMetrics(r.metrics)}</td>
           </tr>`
           )
@@ -164,6 +191,7 @@ function renderTable(records) {
 }
 
 async function loadDataTab(type) {
+  const requestedUser = selectedUserId;
   const container = document.getElementById('data-container');
   container.innerHTML = '<p class="empty-state">Loading...</p>';
 
@@ -174,6 +202,13 @@ async function loadDataTab(type) {
 
   const res = await fetch(`/api/data/${type}?user_id=${encodeURIComponent(selectedUserId || '')}`);
   const body = await res.json();
+  if (requestedUser !== selectedUserId) return;
+
+  if (!res.ok || body.error) {
+    container.innerHTML = `<p class="empty-state">Could not load data: ${escapeHtml(body.error || `HTTP ${res.status}`)}</p>`;
+    return;
+  }
+
   const records = body.data || [];
   dataCache[type] = records;
   container.innerHTML = renderTable(records);
@@ -252,7 +287,7 @@ function appendEvent(eventType, data) {
   document.getElementById('event-counter').textContent = `${eventCount} events`;
 }
 
-function openStream(endpoint) {
+function openStream(endpoint, mode) {
   if (activeSource) activeSource.close();
 
   activeSource = new EventSource(endpoint);
@@ -260,6 +295,52 @@ function openStream(endpoint) {
   activeSource.addEventListener('data',       (e) => appendEvent('data', e.data));
   activeSource.addEventListener('connection', (e) => appendEvent('connection', e.data));
   activeSource.addEventListener('rule',       (e) => appendEvent('rule', e.data));
+  activeSource.addEventListener('stream_error', (e) => {
+    let message = e.data;
+    try {
+      const parsed = JSON.parse(e.data);
+      message = `${parsed.status ? `[${parsed.status}] ` : ''}${parsed.message || e.data}`;
+    } catch { /* not JSON, use raw text */ }
+
+    const feed = document.getElementById('event-feed');
+    const placeholder = feed.querySelector('.feed-empty');
+    if (placeholder) placeholder.remove();
+    feed.insertAdjacentHTML(
+      'beforeend',
+      `<div class="event-row"><span class="ev-error">[error]</span> ${escapeHtml(message)}</div>`
+    );
+    feed.scrollTop = feed.scrollHeight;
+
+    // Server ended the response after a fatal error (e.g. bad token) — native
+    // EventSource would otherwise auto-reconnect and repeat the same error
+    // forever. Stop here instead.
+    closeStream();
+  });
+
+  activeSource.onerror = () => {
+    // Replay streams are finite: the server ends the response once history
+    // has been sent, which EventSource treats as a drop and would otherwise
+    // auto-reconnect and re-replay the same window forever. Treat any
+    // error/close as end-of-replay and stop.
+    if (mode === 'replay') {
+      const hadEvents = eventCount > 0;
+      closeStream();
+      const feed = document.getElementById('event-feed');
+      if (hadEvents) {
+        feed.insertAdjacentHTML(
+          'beforeend',
+          '<div class="event-row"><span class="feed-empty">— replay ended —</span></div>'
+        );
+        feed.scrollTop = feed.scrollHeight;
+      } else {
+        // Don't leave a stale "Replaying..." placeholder behind
+        feed.innerHTML = '<span class="feed-empty">No events found in the replay window.</span>';
+      }
+    }
+    // mode === 'connect': do nothing — native auto-reconnect is desirable
+    // for a live stream that drops. Fatal auth errors are handled above via
+    // the stream_error event, which calls closeStream() itself.
+  };
 
   document.getElementById('btn-connect').hidden    = true;
   document.getElementById('btn-replay').hidden     = true;
@@ -274,14 +355,14 @@ function closeStream() {
 }
 
 document.getElementById('btn-connect').addEventListener('click', () => {
-  openStream('/api/stream/connect');
+  openStream('/api/stream/connect', 'connect');
 });
 
 document.getElementById('btn-replay').addEventListener('click', () => {
   eventCount = 0;
   document.getElementById('event-counter').textContent = '0 events';
   document.getElementById('event-feed').innerHTML = '<span class="feed-empty">Replaying...</span>';
-  openStream('/api/stream/replay');
+  openStream('/api/stream/replay', 'replay');
 });
 
 document.getElementById('btn-disconnect').addEventListener('click', closeStream);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isValidHttpUrl } from '@/lib/validateUrl';
 
 // Helper to build headers to forward as tuples (preserves header name casing)
 function buildHeaderTuples(request: NextRequest): [string, string][] {
@@ -50,6 +51,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing url parameter' }, { status: 400 });
   }
 
+  if (!isValidHttpUrl(url)) {
+    return NextResponse.json({ error: 'Invalid url parameter' }, { status: 400 });
+  }
+
   try {
     const headers = buildHeaderTuples(request);
 
@@ -84,6 +89,10 @@ export async function POST(request: NextRequest) {
 
   if (!url) {
     return NextResponse.json({ error: 'Missing url parameter' }, { status: 400 });
+  }
+
+  if (!isValidHttpUrl(url)) {
+    return NextResponse.json({ error: 'Invalid url parameter' }, { status: 400 });
   }
 
   try {
@@ -122,6 +131,10 @@ export async function PUT(request: NextRequest) {
 
   if (!url) {
     return NextResponse.json({ error: 'Missing url parameter' }, { status: 400 });
+  }
+
+  if (!isValidHttpUrl(url)) {
+    return NextResponse.json({ error: 'Invalid url parameter' }, { status: 400 });
   }
 
   try {

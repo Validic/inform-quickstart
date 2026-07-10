@@ -50,7 +50,7 @@ export default function ResponsePanel({
 
   const handleCopyJson = async () => {
     if (!response) return;
-    await navigator.clipboard.writeText(JSON.stringify(response, null, 2));
+    await navigator.clipboard.writeText(JSON.stringify(obfuscateSensitiveData(response), null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -227,7 +227,7 @@ export default function ResponsePanel({
             // Handle regular data response
             if (response.data) {
               // Check if all records are user records
-              const hasUsers = response.data.some(r => r.uid !== undefined && (r.marketplace || r.mobile));
+              const hasUsers = response.data.some(r => r.uid !== undefined);
 
               if (hasUsers) {
                 const pagination = response.pagination;
